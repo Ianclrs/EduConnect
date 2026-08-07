@@ -1,0 +1,91 @@
+---
+name: Project Bootstrap & Infrastructure
+status: planned
+references: V1, ADR-001
+---
+
+# Spec 1: Project Bootstrap & Infrastructure
+
+## What This Spec Delivers
+
+Initializes the complete .NET 10 backend solution with proper project separation, database connectivity, Docker support, and all foundational configuration. After this spec is implemented, a developer can run `docker compose up` and have a working PostgreSQL instance with the API running and responding to health checks.
+
+## Acceptance Criteria
+
+1. **AC1:** `dotnet build` succeeds on the solution with zero errors and zero warnings.
+2. **AC2:** `docker compose up` starts PostgreSQL 16 and the API on ports 5432 and 5000 respectively.
+3. **AC3:** `GET /health` returns `200 OK` with `{ "status": "Healthy" }`.
+4. **AC4:** `GET /health/db` returns `200 OK` confirming PostgreSQL connectivity.
+5. **AC5:** EF Core migrations run successfully against the PostgreSQL container.
+6. **AC6:** Swagger UI is available at `/swagger` in Development mode.
+7. **AC7:** Project structure matches the design document exactly.
+8. **AC8:** `.gitignore` excludes all build artifacts, `bin/`, `obj/`, `.env`, and IDE files.
+
+## Value Delivery
+
+Implements V1 (Project Bootstrap & Infrastructure) from vision.md. This spec delivers the entire technical foundation for the EduGestor platform: a runnable .NET 10 API project, PostgreSQL database connectivity via Docker, EF Core integration, health monitoring endpoints, and build/CI readiness. Without this spec, no other spec can begin implementation.
+
+## Functional Requirements
+
+| ID | Requirement | AC Coverage |
+|---|---|---|
+| FR1 | The solution MUST contain 4 projects: EduGestor.Api, EduGestor.Core, EduGestor.Infrastructure, EduGestor.Api.Tests | AC1, AC7 |
+| FR2 | EduGestor.Api MUST reference EduGestor.Infrastructure and EduGestor.Core | AC1, AC7 |
+| FR3 | EduGestor.Infrastructure MUST reference EduGestor.Core | AC1, AC7 |
+| FR4 | All projects MUST target net10.0 with Nullable enabled, ImplicitUsings enabled, TreatWarningsAsErrors=true | AC1 |
+| FR5 | The API MUST expose `GET /health` returning 200 OK with `{"status":"Healthy"}` | AC3 |
+| FR6 | The API MUST expose `GET /health/db` returning 200 OK when PostgreSQL is reachable, 503 when not | AC4 |
+| FR7 | The API MUST use Serilog for structured logging, with console sink configured at startup | AC1 |
+| FR8 | Swagger UI MUST be available at `/swagger` when `ASPNETCORE_ENVIRONMENT=Development` | AC6 |
+| FR9 | EF Core DbContext (AppDbContext) MUST connect to PostgreSQL via Npgsql using the connection string from `ConnectionStrings:Default` | AC4, AC5 |
+| FR10 | EF Core migrations MUST be auto-applied at startup in Development mode via `db.Database.Migrate()` | AC5 |
+| FR11 | Docker Compose MUST define PostgreSQL 16-alpine service with healthcheck (`pg_isready`) | AC2 |
+| FR12 | Docker Compose MUST define API service that depends on PostgreSQL healthcheck, exposing port 5000 mapped to container port 8080 | AC2 |
+| FR13 | Dockerfile MUST be multi-stage (SDK build + ASP.NET runtime) using `mcr.microsoft.com/dotnet/sdk:10.0` and `mcr.microsoft.com/dotnet/aspnet:10.0` | AC2 |
+| FR14 | `.gitignore` MUST exclude `bin/`, `obj/`, `.env`, IDE directories, and standard .NET build artifacts | AC8 |
+| FR15 | `.dockerignore` MUST exclude `bin/`, `obj/`, `.git/`, `node_modules/` | AC2 |
+| FR16 | `Directory.Build.props` MUST define TargetFramework=net10.0, Nullable=enable, ImplicitUsings=enable, TreatWarningsAsErrors=true, AnalysisLevel=latest-recommended | AC1 |
+
+## Non-Functional Requirements
+
+| ID | Requirement | Target |
+|---|---|---|
+| NFR1 | Build time from clean state MUST be under 60 seconds | `dotnet build` on developer machine |
+| NFR2 | Health endpoint MUST respond within 200ms (p95) | Measured via any HTTP client |
+| NFR3 | DB health endpoint MUST timeout after 5 seconds and return 503 if PostgreSQL is unreachable | Connection timeout in connection string |
+| NFR4 | All NuGet packages MUST use floating version notation (`*` suffix) for patch-level updates | e.g., `10.*` |
+| NFR5 | Docker images MUST be based on official Microsoft .NET images (no third-party base images) | `mcr.microsoft.com/dotnet/*` |
+| NFR6 | PostgreSQL Docker image MUST use `16-alpine` variant for minimal image size | `postgres:16-alpine` |
+| NFR7 | Code MUST compile with zero warnings (TreatWarningsAsErrors=true) | AC1 |
+
+## Constraints
+
+| ID | Constraint |
+|---|---|
+| C1 | .NET SDK version must be exactly 10.0.x — no earlier, no later |
+| C2 | Target framework must be `net10.0` |
+| C3 | All project names MUST start with `EduGestor.` prefix |
+| C4 | Project folders MUST be under `src/` (source) and `tests/` (test projects) |
+| C5 | Solution file MUST be named `EduGestor.sln` at repository root |
+| C6 | Docker Compose MUST use `docker compose` (v2 plugin syntax), not `docker-compose` (v1) |
+| C7 | Port 5432 for PostgreSQL, port 5000 for API — these are NON-negotiable to avoid conflicts with Specs 2-10 |
+| C8 | `.env.example` MUST exist with `DB_PASSWORD=edugestor_dev` — `.env` MUST be git-ignored |
+
+## Edge Cases & Error States
+
+| ID | Scenario | Expected Behavior |
+|---|---|---|
+| E1 | PostgreSQL container is not running when API starts | `AddInfrastructure()` logs warning but does NOT crash. Health check `/health` returns 200 (API is alive). `/health/db` returns 503 with `{"status":"Unhealthy","database":"Disconnected"}` |
+| E2 | PostgreSQL becomes unavailable after API has been running | EF Core throws `NpgsqlException` on next query. Health check `/health/db` returns 503. No crash — graceful degradation |
+| E3 | Docker build fails due to missing .NET SDK image | `docker compose build` returns non-zero exit code. Error message from Docker daemon |
+| E4 | Port 5432 or 5000 already in use on host | Docker Compose fails to start with port conflict error. User must free ports or change `.env` overrides |
+| E5 | EF Core migration fails (e.g., schema mismatch on existing DB) | Auto-migration on startup throws `MigrationException`. API fails to start — logs error via Serilog. This is intentional: don't run with bad schema |
+| E6 | `dotnet test` runs with no PostgreSQL available | HealthControllerTests for `/health/db` fail. Other tests (plain `/health`) pass. Tests requiring DB should be integration-tagged |
+| E7 | Solution opened on machine without .NET 10 SDK | `dotnet build` fails with SDK not found error. Directory.Build.props specifies net10.0 which requires SDK 10 |
+| E8 | `.env` file contains special characters in DB_PASSWORD | PostgreSQL accepts them if properly URL-encoded. Connection string in docker-compose.yml passes value literally — special chars like `$`, `&` must be escaped or avoided in dev |
+| E9 | Docker volume `pgdata` contains data from a different PostgreSQL major version | PostgreSQL 16-alpine refuses to start. User must `docker compose down -v` to reset volume |
+| E10 | `ASPNETCORE_ENVIRONMENT` is set to `Production` | Swagger UI is NOT available at `/swagger`. Auto-migration does NOT run. This is correct behavior — production safety |
+
+## Dependencies
+
+- None (this is the root spec — nothing depends on it, everything depends on it).

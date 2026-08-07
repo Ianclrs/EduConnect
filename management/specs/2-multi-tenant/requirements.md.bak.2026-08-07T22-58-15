@@ -1,0 +1,27 @@
+---
+name: Multi-Tenant Architecture
+status: planned
+references: V2, ADR-002
+---
+
+# Spec 2: Multi-Tenant Architecture
+
+## What This Spec Delivers
+
+Complete tenant isolation infrastructure. Every tenant-scoped entity carries a `TenantId` and EF Core global query filters ensure no data leaks between schools. A middleware resolves the current tenant from the authenticated user's JWT claims on every request.
+
+## Acceptance Criteria
+
+1. **AC1:** `Tenant` entity exists with `Id` (Guid), `Name`, `Slug` (unique), `CreatedAt`.
+2. **AC2:** `ITenantScoped` interface exists with `Guid TenantId { get; }` property.
+3. **AC3:** All tenant-scoped entities implement `ITenantScoped`.
+4. **AC4:** `AppDbContext` applies global query filter `e => e.TenantId == _currentTenantId` for all entities implementing `ITenantScoped`.
+5. **AC5:** `TenantMiddleware` resolves `TenantId` from `HttpContext.Items["TenantId"]` set by auth.
+6. **AC6:** `ITenantContext` service provides `TenantId` scoped to the current request.
+7. **AC7:** Attempting to query data without a tenant context throws `TenantNotResolvedException`.
+8. **AC8:** A `TenantSeeder` creates a default tenant on first run (for bootstrapping).
+9. **AC9:** Tenant admin user can be seeded per tenant.
+
+## Dependencies
+
+- Spec 1: Bootstrap & Infrastructure (requires solution, DbContext, Docker)

@@ -1,0 +1,75 @@
+# Spec 1: Tasks — Project Bootstrap & Infrastructure
+
+## Task Checklist
+
+### T1.1: Create solution and projects
+- [ ] Run `dotnet new sln -n EduGestor`
+- [ ] Run `dotnet new webapi -n EduGestor.Api -o src/EduGestor.Api`
+- [ ] Run `dotnet new classlib -n EduGestor.Core -o src/EduGestor.Core`
+- [ ] Run `dotnet new classlib -n EduGestor.Infrastructure -o src/EduGestor.Infrastructure`
+- [ ] Run `dotnet new xunit -n EduGestor.Api.Tests -o tests/EduGestor.Api.Tests`
+- [ ] Add all projects to solution: `dotnet sln add src/*/`
+- [ ] Add project references:
+  - `EduGestor.Api` → `EduGestor.Infrastructure`, `EduGestor.Core`
+  - `EduGestor.Infrastructure` → `EduGestor.Core`
+  - `EduGestor.Api.Tests` → `EduGestor.Api`
+
+### T1.2: Configure Directory.Build.props
+- [ ] Create `Directory.Build.props` at solution root
+- [ ] Set TargetFramework=net10.0, Nullable=enable, ImplicitUsings=enable, TreatWarningsAsErrors=true
+
+### T1.3: Install NuGet packages
+- [ ] EduGestor.Api: Swashbuckle.AspNetCore, Serilog.AspNetCore, Microsoft.EntityFrameworkCore.Design
+- [ ] EduGestor.Infrastructure: Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore
+- [ ] EduGestor.Api.Tests: Microsoft.AspNetCore.Mvc.Testing
+
+### T1.4: Create AppDbContext
+- [ ] Create `src/EduGestor.Infrastructure/Data/AppDbContext.cs`
+- [ ] Inherit from DbContext, empty DbSets for now
+- [ ] Override OnModelCreating (empty, placeholder for future configs)
+- [ ] Create DI registration extension: `AddInfrastructure(IConfiguration)` in DependencyInjection.cs
+
+### T1.5: Create HealthController
+- [ ] Create `src/EduGestor.Api/Controllers/HealthController.cs`
+- [ ] Implement GET `/health` returning 200 with status JSON
+- [ ] Implement GET `/health/db` checking `db.Database.CanConnectAsync()`
+
+### T1.6: Configure Program.cs
+- [ ] Configure Serilog with console sink
+- [ ] Add services: Controllers, EndpointsApiExplorer, SwaggerGen
+- [ ] Call `builder.Services.AddInfrastructure(builder.Configuration)`
+- [ ] Use middleware: Swagger, Routing, MapControllers
+- [ ] Add `app.UseSerilogRequestLogging()`
+- [ ] Add db migration auto-apply in Development mode
+
+### T1.7: Configure appsettings
+- [ ] `appsettings.json`: basic config with Logging
+- [ ] `appsettings.Development.json`: ConnectionStrings.Default pointing to localhost PostgreSQL
+
+### T1.8: Create Dockerfile
+- [ ] Create multi-stage Dockerfile in `src/EduGestor.Api/Dockerfile`
+- [ ] Build stage: `mcr.microsoft.com/dotnet/sdk:10.0`
+- [ ] Runtime stage: `mcr.microsoft.com/dotnet/aspnet:10.0`
+- [ ] Expose port 8080
+
+### T1.9: Create docker-compose.yml
+- [ ] PostgreSQL 16-alpine service with healthcheck
+- [ ] API service with build context, dependency on postgres healthy
+- [ ] Named volume for pgdata
+
+### T1.10: Create .gitignore and .dockerignore
+- [ ] Run `dotnet new gitignore` at root
+- [ ] Add `.env` to .gitignore
+- [ ] Create `.dockerignore` excluding bin/, obj/, .git/, node_modules/
+
+### T1.11: Create .env.example
+- [ ] `DB_PASSWORD=edugestor_dev` — placeholder value
+
+### T1.12: Create HealthControllerTests
+- [ ] Test GET `/health` returns 200 OK
+- [ ] Test response contains `{"status":"Healthy"}`
+
+### T1.13: Verify
+- [ ] `dotnet build` — zero errors/warnings
+- [ ] `dotnet test` — all tests pass
+- [ ] `docker compose up` — API responds on localhost:5000/health

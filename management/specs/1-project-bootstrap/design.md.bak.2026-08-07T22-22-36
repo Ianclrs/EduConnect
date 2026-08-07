@@ -1,0 +1,278 @@
+# Spec 1: Design — Project Bootstrap & Infrastructure
+
+## Design Approach
+
+**Principle:** This spec follows the "Clean Architecture Lite" pattern — the simplest possible project separation that still enforces dependency direction. Core has zero dependencies (pure domain). Infrastructure depends on Core. API depends on both. No MediatR, no CQRS, no repository pattern — direct `AppDbContext` injection into controllers for this bootstrap phase. These patterns will be introduced in later specs ONLY when justified by complexity.
+
+**Rationale:** The bootstrap spec must be the simplest runnable skeleton. Over-engineering at this stage creates coupling debt that cascades through all dependent specs. The design explicitly avoids:
+- Repository pattern (not needed with EF Core as the repository)
+- MediatR/CQRS (no business logic yet)
+- AutoMapper (no DTOs yet)
+- Custom middleware (no cross-cutting concerns yet)
+
+These can be added in Specs 2-10 as genuine needs arise.
+
+## Data Flow
+
+```
+HTTP Request                                                 HTTP Response
+    │                                                              ▲
+    ▼                                                              │
+┌──────────────┐    ┌──────────────────┐    ┌──────────────┐    ┌─┴──────────┐
+│ ASP.NET Core │───▶│  HealthController│───▶│ AppDbContext │───▶│ JSON Body  │
+│ Middleware   │    │  (Endpoint)      │    │ (EF Core)    │    │ 200/503    │
+│ Pipeline     │    └──────────────────┘    └──────┬───────┘    └────────────┘
+└──────────────┘                                    │
+      │                                             ▼
+      │                                    ┌──────────────────┐
+      └───────────────────────────────────▶│ PostgreSQL 16    │
+           (Serilog logs every request)    │ (Docker)         │
+                                           └──────────────────┘
+```
+
+**Step-by-step for `/health`:**
+1. HTTP GET arrives at ASP.NET Core pipeline.
+2. Serilog logs the request (method, path, status).
+3. Routing middleware matches `/health` to `HealthController.Get()`.
+4. Controller returns `Ok(new { status = "Healthy" })` — no DB call.
+5. ASP.NET Core serializes to JSON and returns 200.
+
+**Step-by-step for `/health/db`:**
+1. HTTP GET arrives. Serilog logs the request.
+2. Routing middleware matches `/health/db` to `HealthController.GetDb(AppDbContext db)`.
+3. DI injects scoped `AppDbContext` (resolved from request scope).
+4. `db.Database.CanConnectAsync()` opens a connection to PostgreSQL via Npgsql.
+5. If connected → 200 OK with `{"status":"Healthy","database":"Connected"}`.
+6. If connection fails (timeout, NpgsqlException) → 503 with `{"status":"Unhealthy","database":"Disconnected"}`. Exception is caught and logged by Serilog.
+
+**Startup data flow:**
+1. `Program.cs` creates WebApplication builder.
+2. Serilog is configured from `appsettings.json` + code defaults.
+3. `builder.Services.AddInfrastructure(builder.Configuration)` registers:
+   - `AppDbContext` with Npgsql provider.
+   - Connection string from `ConnectionStrings:Default`.
+4. `builder.Services.AddControllers()` + `AddEndpointsApiExplorer()` + `AddSwaggerGen()`.
+5. App is built: `builder.Build()`.
+6. Middleware pipeline: `UseSwagger()` → `UseSwaggerUI()` → `UseSerilogRequestLogging()` → `UseRouting()` → `MapControllers()`.
+7. If `ASPNETCORE_ENVIRONMENT=Development`: `db.Database.Migrate()` auto-applies pending EF Core migrations.
+8. `app.Run()` — blocking call, API starts listening.
+
+## Architecture Decisions
+
+### ADR within this spec (design-level, not project-level)
+
+| Decision | Rationale | Alternatives Rejected |
+|---|---|---|
+| Use `AppDbContext` directly in controller (no service layer) | Bootstrap has zero business logic. Service layer would be a pass-through with no value | Service layer (added in Spec 4+) |
+| Use `AddInfrastructure(IConfiguration)` extension method | Keeps Program.cs clean and gives Infrastructure control over its own DI registration | Inline registration in Program.cs |
+| Use `dotnet new` CLI for project scaffolding | Deterministic, reproducible, no manual XML editing of csproj files | Manual project creation |
+| Health endpoints in `HealthController` | Separation from future business endpoints. Clear responsibility boundary | Adding health to a generic controller |
+| Floating NuGet versions (`10.*`) | Allows patch updates without spec changes. Major version locked to .NET 10 | Exact versions (require spec updates for every patch) |
+| Multi-stage Dockerfile | Separates build dependencies from runtime image. Smaller final image | Single-stage (larger image, SDK shipped to production) |
+| `ConnectionStrings:Default` naming | ASP.NET Core convention. EF Core tooling (`dotnet ef`) auto-discovers this key | Custom key name (breaks tooling) |
+| PostgreSQL healthcheck via `pg_isready` in Docker Compose | Native PostgreSQL tool, zero dependencies. Prevents API from starting before DB is ready | TCP port check (DB might not be accepting connections yet) |
+| `TreatWarningsAsErrors=true` | Force zero-warning builds from day one. Warnings become debt if allowed to accumulate | Allow warnings (accumulates technical debt) |
+
+## Component / Module Breakdown
+
+### EduGestor.Api
+- **Responsibility:** HTTP endpoint hosting, middleware pipeline, configuration loading.
+- **Public surface:** REST endpoints at configured ports. Swagger UI in Development.
+- **Dependencies:** EduGestor.Core, EduGestor.Infrastructure.
+- **Reasons to change:** New controller added, middleware pipeline reordered, new NuGet package for API layer.
+
+### EduGestor.Core
+- **Responsibility:** Domain entities, value objects, interfaces. Pure C# — no external packages.
+- **Public surface:** All public classes and interfaces in the `EduGestor.Core` namespace.
+- **Dependencies:** None (zero package references).
+- **Reasons to change:** New domain entity added, new interface defined, new enum created.
+
+### EduGestor.Infrastructure
+- **Responsibility:** Data access (EF Core), external service integrations, DI registration.
+- **Public surface:** `AddInfrastructure(IConfiguration)` extension method. `AppDbContext` class. Services registered in DI.
+- **Dependencies:** EduGestor.Core, Npgsql.EntityFrameworkCore.PostgreSQL.
+- **Reasons to change:** New DbSet added, new external service integrated, connection string format changed.
+
+### EduGestor.Api.Tests
+- **Responsibility:** Integration tests for API endpoints. Uses `WebApplicationFactory<Program>`.
+- **Public surface:** Test classes and methods (xUnit).
+- **Dependencies:** EduGestor.Api, Microsoft.AspNetCore.Mvc.Testing.
+- **Reasons to change:** New controller needs tests, existing endpoint behavior changes.
+
+## File / Module Layout
+
+```
+EduGestor/
+├── EduGestor.sln
+├── docker-compose.yml
+├── .dockerignore
+├── .gitignore
+├── .env.example
+├── Directory.Build.props
+│
+├── src/
+│   ├── EduGestor.Api/                  # ASP.NET Core Web API
+│   │   ├── EduGestor.Api.csproj
+│   │   ├── Program.cs                  # App entry point + DI + middleware pipeline
+│   │   ├── appsettings.json
+│   │   ├── appsettings.Development.json
+│   │   ├── Controllers/
+│   │   │   └── HealthController.cs     # /health + /health/db endpoints
+│   │   └── Dockerfile
+│   │
+│   ├── EduGestor.Core/                 # Domain layer — zero dependencies
+│   │   ├── EduGestor.Core.csproj
+│   │   └── (empty — populated by later specs)
+│   │
+│   └── EduGestor.Infrastructure/       # EF Core, external services
+│       ├── EduGestor.Infrastructure.csproj
+│       ├── Data/
+│       │   └── AppDbContext.cs         # EF Core DbContext (empty, no entities yet)
+│       └── DependencyInjection.cs      # Extension method: AddInfrastructure()
+│
+└── tests/
+    └── EduGestor.Api.Tests/
+        ├── EduGestor.Api.Tests.csproj
+        └── HealthControllerTests.cs
+```
+
+## Project Dependencies
+
+```
+EduGestor.Api ──► EduGestor.Infrastructure ──► EduGestor.Core
+EduGestor.Api ──► EduGestor.Core
+EduGestor.Api.Tests ──► EduGestor.Api
+```
+
+## Technology Versions
+
+| Component | Version |
+|---|---|
+| .NET SDK | 10.0.x |
+| Target Framework | net10.0 |
+| ASP.NET Core | 10.0.x |
+| EF Core | 10.0.x |
+| Npgsql EF Core | 10.0.x |
+| PostgreSQL | 16-alpine (Docker) |
+| Swashbuckle | 7.x |
+| Serilog.AspNetCore | 9.x |
+
+## NuGet Packages (EduGestor.Api)
+
+```xml
+<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
+<PackageReference Include="Serilog.AspNetCore" Version="9.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" />
+```
+
+## NuGet Packages (EduGestor.Infrastructure)
+
+```xml
+<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.*" />
+```
+
+## NuGet Packages (EduGestor.Core)
+
+```xml
+<!-- No packages — pure domain layer -->
+```
+
+## docker-compose.yml
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: edugestor
+      POSTGRES_USER: edugestor
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edugestor_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edugestor"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/EduGestor.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-edugestor_dev}
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+```
+
+## Connection String (appsettings.Development.json)
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev"
+  }
+}
+```
+
+## HealthController
+
+```csharp
+[ApiController]
+[Route("[controller]")]
+public class HealthController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get() => Ok(new { status = "Healthy" });
+
+    [HttpGet("db")]
+    public async Task<IActionResult> GetDb(AppDbContext db)
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        return canConnect
+            ? Ok(new { status = "Healthy", database = "Connected" })
+            : StatusCode(503, new { status = "Unhealthy", database = "Disconnected" });
+    }
+}
+```
+
+## Program.cs Pipeline
+
+```csharp
+// 1. Create builder
+// 2. Add Serilog
+// 3. Add services: Controllers, Swagger, OpenApi, Infrastructure
+// 4. Build app
+// 5. Use middleware: Swagger, Routing, Endpoints
+// 6. Auto-migrate database on startup (Development only)
+// 7. Run
+```
+
+## Directory.Build.props (root)
+
+```xml
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+</Project>
+```
+
+## .gitignore
+
+Standard .NET gitignore from `dotnet new gitignore` + `.env` file exclusion.

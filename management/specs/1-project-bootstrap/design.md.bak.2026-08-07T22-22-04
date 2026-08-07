@@ -1,0 +1,179 @@
+# Spec 1: Design — Project Bootstrap & Infrastructure
+
+## Project Structure
+
+```
+EduGestor/
+├── EduGestor.sln
+├── docker-compose.yml
+├── .dockerignore
+├── .gitignore
+├── .env.example
+├── Directory.Build.props
+│
+├── src/
+│   ├── EduGestor.Api/                  # ASP.NET Core Web API
+│   │   ├── EduGestor.Api.csproj
+│   │   ├── Program.cs                  # App entry point + DI + middleware pipeline
+│   │   ├── appsettings.json
+│   │   ├── appsettings.Development.json
+│   │   ├── Controllers/
+│   │   │   └── HealthController.cs     # /health + /health/db endpoints
+│   │   └── Dockerfile
+│   │
+│   ├── EduGestor.Core/                 # Domain layer — zero dependencies
+│   │   ├── EduGestor.Core.csproj
+│   │   └── (empty — populated by later specs)
+│   │
+│   └── EduGestor.Infrastructure/       # EF Core, external services
+│       ├── EduGestor.Infrastructure.csproj
+│       ├── Data/
+│       │   └── AppDbContext.cs         # EF Core DbContext (empty, no entities yet)
+│       └── DependencyInjection.cs      # Extension method: AddInfrastructure()
+│
+└── tests/
+    └── EduGestor.Api.Tests/
+        ├── EduGestor.Api.Tests.csproj
+        └── HealthControllerTests.cs
+```
+
+## Project Dependencies
+
+```
+EduGestor.Api ──► EduGestor.Infrastructure ──► EduGestor.Core
+EduGestor.Api ──► EduGestor.Core
+EduGestor.Api.Tests ──► EduGestor.Api
+```
+
+## Technology Versions
+
+| Component | Version |
+|---|---|
+| .NET SDK | 10.0.x |
+| Target Framework | net10.0 |
+| ASP.NET Core | 10.0.x |
+| EF Core | 10.0.x |
+| Npgsql EF Core | 10.0.x |
+| PostgreSQL | 16-alpine (Docker) |
+| Swashbuckle | 7.x |
+| Serilog.AspNetCore | 9.x |
+
+## NuGet Packages (EduGestor.Api)
+
+```xml
+<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
+<PackageReference Include="Serilog.AspNetCore" Version="9.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" />
+```
+
+## NuGet Packages (EduGestor.Infrastructure)
+
+```xml
+<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.*" />
+```
+
+## NuGet Packages (EduGestor.Core)
+
+```xml
+<!-- No packages — pure domain layer -->
+```
+
+## docker-compose.yml
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: edugestor
+      POSTGRES_USER: edugestor
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edugestor_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edugestor"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/EduGestor.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-edugestor_dev}
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+```
+
+## Connection String (appsettings.Development.json)
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev"
+  }
+}
+```
+
+## HealthController
+
+```csharp
+[ApiController]
+[Route("[controller]")]
+public class HealthController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get() => Ok(new { status = "Healthy" });
+
+    [HttpGet("db")]
+    public async Task<IActionResult> GetDb(AppDbContext db)
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        return canConnect
+            ? Ok(new { status = "Healthy", database = "Connected" })
+            : StatusCode(503, new { status = "Unhealthy", database = "Disconnected" });
+    }
+}
+```
+
+## Program.cs Pipeline
+
+```csharp
+// 1. Create builder
+// 2. Add Serilog
+// 3. Add services: Controllers, Swagger, OpenApi, Infrastructure
+// 4. Build app
+// 5. Use middleware: Swagger, Routing, Endpoints
+// 6. Auto-migrate database on startup (Development only)
+// 7. Run
+```
+
+## Directory.Build.props (root)
+
+```xml
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+</Project>
+```
+
+## .gitignore
+
+Standard .NET gitignore from `dotnet new gitignore` + `.env` file exclusion.

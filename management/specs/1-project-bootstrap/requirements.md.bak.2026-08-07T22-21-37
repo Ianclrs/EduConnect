@@ -1,0 +1,26 @@
+---
+name: Project Bootstrap & Infrastructure
+status: planned
+references: V1, ADR-001
+---
+
+# Spec 1: Project Bootstrap & Infrastructure
+
+## What This Spec Delivers
+
+Initializes the complete .NET 10 backend solution with proper project separation, database connectivity, Docker support, and all foundational configuration. After this spec is implemented, a developer can run `docker compose up` and have a working PostgreSQL instance with the API running and responding to health checks.
+
+## Acceptance Criteria
+
+1. **AC1:** `dotnet build` succeeds on the solution with zero errors and zero warnings.
+2. **AC2:** `docker compose up` starts PostgreSQL 16 and the API on ports 5432 and 5000 respectively.
+3. **AC3:** `GET /health` returns `200 OK` with `{ "status": "Healthy" }`.
+4. **AC4:** `GET /health/db` returns `200 OK` confirming PostgreSQL connectivity.
+5. **AC5:** EF Core migrations run successfully against the PostgreSQL container.
+6. **AC6:** Swagger UI is available at `/swagger` in Development mode.
+7. **AC7:** Project structure matches the design document exactly.
+8. **AC8:** `.gitignore` excludes all build artifacts, `bin/`, `obj/`, `.env`, and IDE files.
+
+## Dependencies
+
+- None (this is the root spec — nothing depends on it, everything depends on it).
