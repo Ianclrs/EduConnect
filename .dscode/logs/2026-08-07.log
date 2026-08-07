@@ -26,3 +26,17 @@
 [19:56:34] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
 [19:57:55] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=true shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
 [19:58:22] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:35:09] [recap] memory.enabled is false — turn storage disabled
+[20:35:09] [recap] App state: showWelcome=true overlayDismissed=false view=chat busy=false shouldShowOverlay=true showWelcomeInStatic=true recapEntries=0
+[20:35:09] [recap] AppStateProvider mounted: showWelcome=true welcomeOverlayDismissed=false (initial state)
+[20:35:09] [recap] AppStateContext showWelcome changed: showWelcome=true
+[20:35:09] [recap] AppStateContext welcomeOverlayDismissed changed: welcomeOverlayDismissed=false
+[20:35:09] [recap] initialPrompt check: hasPrompt=false submitted=false value=undefined
+[20:35:27] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:35:27] [recap] AppStateContext welcomeOverlayDismissed changed: welcomeOverlayDismissed=true
+[20:35:47] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=true shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:35:55] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:36:33] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=true shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:37:03] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:45:31] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=true shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
+[20:46:17] [recap] App state: showWelcome=true overlayDismissed=true view=chat busy=false shouldShowOverlay=false showWelcomeInStatic=true recapEntries=0
