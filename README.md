@@ -155,24 +155,34 @@ Spec 10: Bootstrap & Infra
 
 ## Como Rodar (quando implementado)
 
+### Opção 1: Com Docker (recomendado para setup rápido)
+
 ```bash
 # 1. Clonar o repositório
 git clone <repo-url> && cd EduConnect
 
-# 2. Subir o banco de dados
+# 2. Subir o banco e a API
 docker compose up -d
-
-# 3. Rodar as migrations
-dotnet ef database update --project src/EduGestor.Api
-
-# 4. Iniciar a API
-dotnet run --project src/EduGestor.Api
-
-# 5. Iniciar o frontend (em outro terminal)
-cd frontend && npm install && npm run dev
 ```
 
-A API estará em `https://localhost:5001` e o frontend em `http://localhost:5173`.
+A API estará em `http://localhost:5000` e o Swagger em `http://localhost:5000/swagger`.
+
+### Opção 2: Sem Docker (PostgreSQL instalado localmente)
+
+```bash
+# 1. Clonar o repositório
+git clone <repo-url> && cd EduConnect
+
+# 2. Criar banco e usuário via script SQL
+psql -U postgres -f db/init-db.sql
+
+# 3. Iniciar a API
+dotnet run --project src/EduGestor.Api
+```
+
+A API estará em `https://localhost:5001` e o Swagger em `https://localhost:5001/swagger`.
+
+> As migrations do EF Core são aplicadas automaticamente na inicialização em modo Development.
 
 ---
 
@@ -208,6 +218,7 @@ EduConnect/
 │       ├── 80-notifications/
 │       ├── 90-parent-portal/
 │       └── 100-frontend/
+├── db/                         ← Script SQL de inicialização do banco
 ├── .dscode/                    ← Estado interno do DsCode (settings, memória, logs)
 └── src/                        ← Código fonte (a ser criado na Spec 10)
     ├── EduGestor.Api/

@@ -73,14 +73,6 @@
 - [ ] Test `GET /health/db` returns 503 when database is unreachable (use `WebApplicationFactory` with override connection string pointing to non-existent host)
 - [ ] Mark DB-dependent tests with `[Trait("Category", "Integration")]`
 
-### T1.12: Create database init script
-- [ ] Create `db/init-db.sql` at solution root
-- [ ] Script creates `edugestor` role (if not exists) with password `edugestor_dev`
-- [ ] Script creates `edugestor` database (if not exists) owned by `edugestor`
-- [ ] Script grants ALL PRIVILEGES on database and schema public to `edugestor`
-- [ ] Script uses `\set ON_ERROR_STOP on` to fail on first error
-- [ ] Script is idempotent — safe to run multiple times
-
 ### T1.13: Verify
 - [ ] `dotnet build` — zero errors/warnings
 - [ ] `dotnet test` — all tests pass

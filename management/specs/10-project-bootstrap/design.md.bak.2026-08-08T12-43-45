@@ -109,8 +109,6 @@ EduGestor/
 ├── .gitignore
 ├── .env.example
 ├── Directory.Build.props
-├── db/
-│   └── init-db.sql                  # SQL script to create database + user (no Docker required)
 │
 ├── src/
 │   ├── EduGestor.Api/                  # ASP.NET Core Web API
@@ -220,39 +218,6 @@ public static class DependencyInjection
     }
 }
 ```
-
-## Database Setup (Alternative: No Docker)
-
-For developers who already have PostgreSQL installed locally and prefer not to use Docker, a SQL initialization script is provided at `db/init-db.sql`.
-
-**Usage:**
-
-```bash
-# Run as postgres superuser
-psql -U postgres -f db/init-db.sql
-```
-
-**What the script does:**
-
-1. Creates the `edugestor` role with password `edugestor_dev` (if it doesn't already exist)
-2. Creates the `edugestor` database owned by `edugestor` (if it doesn't already exist)
-3. Grants `ALL PRIVILEGES` on database and schema `public` to `edugestor`
-
-**After running the script**, configure the connection string in `appsettings.Development.json`:
-
-```json
-"ConnectionStrings": {
-  "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30"
-}
-```
-
-Then run the API normally:
-
-```bash
-dotnet run --project src/EduGestor.Api
-```
-
-The EF Core auto-migration (in Development mode) creates all tables automatically.
 
 ## docker-compose.yml
 
