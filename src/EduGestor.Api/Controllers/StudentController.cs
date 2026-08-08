@@ -144,6 +144,24 @@ public class StudentController : ControllerBase
         }
     }
 
+    /// <summary>FR-007 (Spec 60): Get enrollment history for a student.</summary>
+    [HttpGet("{id:guid}/enrollment-history")]
+    [Authorize(Roles = "Admin,Staff,Parent")]
+    public async Task<IActionResult> GetEnrollmentHistory(Guid id)
+    {
+        try
+        {
+            var (userId, role) = GetUserInfo();
+            var tenantId = GetTenantId();
+            var result = await _studentService.GetEnrollmentHistoryAsync(id, tenantId, userId, role);
+            return Ok(result);
+        }
+        catch (StudentException ex)
+        {
+            return Problem(title: ex.Message, statusCode: ex.StatusCode);
+        }
+    }
+
     private (Guid userId, UserRole role) GetUserInfo()
     {
         var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

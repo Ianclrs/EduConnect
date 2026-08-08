@@ -24,8 +24,8 @@
 | 30 | Authentication & Authorization | audited | V3, ADR-003 |
 | 40 | Student Management | audited | V4 |
 | 50 | Enrollment System (Matrícula) | audited | V5 |
-| 60 | Re-enrollment System (Rematrícula) | verified | V6 |
-| 70 | Document Management | verified | V7 |
+| 60 | Re-enrollment System (Rematrícula) | audited | V6 |
+| 70 | Document Management | audited | V7 |
 | 80 | Notification System | verified | V8 |
 | 90 | Parent Portal API | verified | V9 |
 | 100 | Frontend Application (React + PWA) | verified | V10 |

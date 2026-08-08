@@ -24,6 +24,8 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<StudentParent> StudentParents { get; set; } = null!;
     public DbSet<EnrollmentPeriod> EnrollmentPeriods { get; set; } = null!;
     public DbSet<Enrollment> Enrollments { get; set; } = null!;
+    public DbSet<DocumentType> DocumentTypes { get; set; } = null!;
+    public DbSet<Document> Documents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -161,6 +163,52 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             entity.HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // DocumentType configuration
+        builder.Entity<DocumentType>(entity =>
+        {
+            entity.HasKey(dt => dt.Id);
+            entity.Property(dt => dt.Nome).HasMaxLength(200).IsRequired();
+            entity.Property(dt => dt.IsRequired).HasDefaultValue(true);
+            entity.Property(dt => dt.IsActive).HasDefaultValue(true);
+
+            entity.HasIndex(dt => dt.TenantId);
+
+            entity.HasOne(dt => dt.Tenant)
+                .WithMany()
+                .HasForeignKey(dt => dt.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Document configuration
+        builder.Entity<Document>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.NomeArquivo).HasMaxLength(500).IsRequired();
+            entity.Property(d => d.CaminhoArquivo).HasMaxLength(1000).IsRequired();
+            entity.Property(d => d.MotivoRejeicao).HasMaxLength(500);
+            entity.Property(d => d.Status).HasConversion<int>();
+            entity.Property(d => d.CreatedAt).HasDefaultValueSql("now()");
+
+            entity.HasIndex(d => d.TenantId);
+            entity.HasIndex(d => d.StudentId);
+            entity.HasIndex(d => new { d.TenantId, d.Status });
+
+            entity.HasOne(d => d.Student)
+                .WithMany()
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.DocumentType)
+                .WithMany()
+                .HasForeignKey(d => d.DocumentTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Tenant)
+                .WithMany()
+                .HasForeignKey(d => d.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

@@ -3,27 +3,27 @@
 ## Tasks
 
 ### T60.1: Create DTOs
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Contracts/ReenrollmentDtos.cs` with `CreateReenrollmentRequest`, `ReenrollmentDetailDto`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T60.2: Create ReenrollmentService
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Services/ReenrollmentService.cs`. Implement CreateAsync (eligibility + carry-forward), GetAllAsync, GetByIdAsync, ApproveAsync, RejectAsync.
 - **Verify:** Unit tests for eligibility validation, document carry-forward, expired doc flagging.
 
 ### T60.3: Create ReenrollmentController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/ReenrollmentController.cs` with all 5 endpoints. Auth: Admin/Staff.
 - **Verify:** Integration tests.
 
 ### T60.4: Add enrollment history endpoint
-- [x] done
+- [ ] pending
 - **Action:** Add `GET /students/{id}/enrollment-history` to `StudentController` (Spec 40). Returns all Enrollments ordered by AnoLetivo DESC.
 - **Verify:** History returns correct records.
 
 ### T60.5: Verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet test` — all pass. `dotnet build` — zero errors. Full workflow: period → enroll → approve → new period → re-enroll → verify docs.
 
 ## Task Dependency Order

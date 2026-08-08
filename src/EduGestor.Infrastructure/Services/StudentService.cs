@@ -14,6 +14,7 @@ public interface IStudentService
     Task DeleteAsync(Guid id, Guid tenantId);
     Task LinkParentAsync(Guid studentId, Guid parentId, Guid tenantId);
     Task UnlinkParentAsync(Guid studentId, Guid parentId, Guid tenantId);
+    Task<List<EnrollmentDto>> GetEnrollmentHistoryAsync(Guid studentId, Guid tenantId, Guid userId, UserRole role);
 }
 
 public class StudentService : IStudentService
@@ -244,6 +245,37 @@ public class StudentService : IStudentService
 
         _db.StudentParents.Remove(link);
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<List<EnrollmentDto>> GetEnrollmentHistoryAsync(Guid studentId, Guid tenantId, Guid userId, UserRole role)
+    {
+        // Parent: must be linked to student
+        if (role == UserRole.Parent)
+        {
+            var isLinked = await _db.StudentParents
+                .AnyAsync(sp => sp.StudentId == studentId && sp.ParentId == userId);
+            if (!isLinked)
+                throw new StudentException("not_linked_to_student", 403);
+        }
+
+        var enrollments = await _db.Enrollments
+            .Include(e => e.Period)
+            .Where(e => e.StudentId == studentId)
+            .OrderByDescending(e => e.Period.AnoLetivo)
+            .ThenByDescending(e => e.CreatedAt)
+            .Select(e => new EnrollmentDto(
+                e.Id,
+                e.StudentId,
+                e.Student.Nome,
+                e.EnrollmentPeriodId,
+                e.Period.Nome,
+                e.Status.ToString(),
+                e.MotivoRejeicao,
+                e.CreatedAt,
+                e.ApprovedAt))
+            .ToListAsync();
+
+        return enrollments;
     }
 
     private static void ValidateFields(string nome, DateTime dataNascimento, string turma, int anoLetivo)

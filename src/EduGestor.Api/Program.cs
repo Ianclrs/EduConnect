@@ -10,6 +10,7 @@ using EduGestor.Infrastructure;
 using EduGestor.Infrastructure.Auth;
 using EduGestor.Infrastructure.Data;
 using EduGestor.Infrastructure.Services;
+using EduGestor.Infrastructure.Storage;
 using EduGestor.Infrastructure.Tenancy;
 using EduGestor.Api.Middleware;
 using EduGestor.Infrastructure.Data.Seeders;
@@ -94,6 +95,14 @@ try
 
     // Enrollment services (Spec 50)
     builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+
+    // Reenrollment services (Spec 60)
+    builder.Services.AddScoped<IReenrollmentService, ReenrollmentService>();
+
+    // Document services (Spec 70)
+    builder.Services.Configure<FileStorageOptions>(builder.Configuration.GetSection(FileStorageOptions.SectionName));
+    builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
+    builder.Services.AddScoped<IDocumentService, DocumentService>();
 
     var app = builder.Build();
 

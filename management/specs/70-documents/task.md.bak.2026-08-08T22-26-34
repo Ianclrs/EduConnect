@@ -3,52 +3,52 @@
 ## Tasks
 
 ### T70.1: Create DocumentType entity
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Core/Entities/DocumentType.cs` implementing `ITenantScoped`.
 - **Verify:** `dotnet build src/EduGestor.Core` exits 0.
 
 ### T70.2: Create Document entity + DocumentStatus enum
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Core/Entities/Document.cs` implementing `ITenantScoped`. Create `DocumentStatus` enum.
 - **Verify:** `dotnet build` exits 0.
 
 ### T70.3: Create IFileStorage + LocalFileStorage
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Storage/IFileStorage.cs` and `LocalFileStorage.cs`. Sanitize filenames. Configure DI.
 - **Verify:** Unit test: save file, verify exists on disk, get stream, delete.
 
 ### T70.4: Create DTOs
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Contracts/DocumentDtos.cs`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T70.5: Create DocumentService
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Services/DocumentService.cs`. Upload (validate + save), Verify (approve/reject + calculate validity), GetPending, GetExpiring.
 - **Verify:** Unit tests for upload validation, verification with/without validity.
 
 ### T70.6: Create DocumentTypeService + Controller endpoints
-- [x] done
+- [ ] pending
 - **Action:** CRUD for document types in DocumentService and DocumentController.
 - **Verify:** Admin can create/list/update/soft-delete document types.
 
 ### T70.7: Create DocumentController
-- [x] done
+- [ ] pending
 - **Action:** All document endpoints with proper auth. File download with Content-Type.
 - **Verify:** Integration tests.
 
 ### T70.8: Update AppDbContext
-- [x] done
+- [ ] pending
 - **Action:** Add `DbSet<DocumentType>`, `DbSet<Document>`. Configure indexes.
 - **Verify:** `dotnet build` exits 0.
 
 ### T70.9: Configure file storage
-- [x] done
+- [ ] pending
 - **Action:** Add `FileStorage:RootPath` to `appsettings.json`. Register `LocalFileStorage` in DI.
 - **Verify:** Upload works end-to-end.
 
 ### T70.10: EF Migration and verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddDocuments`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 
