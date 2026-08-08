@@ -92,6 +92,9 @@ try
     // Student services (Spec 40)
     builder.Services.AddScoped<IStudentService, StudentService>();
 
+    // Enrollment services (Spec 50)
+    builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+
     var app = builder.Build();
 
     // Middleware pipeline

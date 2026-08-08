@@ -22,6 +22,8 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Student> Students { get; set; } = null!;
     public DbSet<StudentParent> StudentParents { get; set; } = null!;
+    public DbSet<EnrollmentPeriod> EnrollmentPeriods { get; set; } = null!;
+    public DbSet<Enrollment> Enrollments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -114,6 +116,51 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             entity.HasOne(sp => sp.Parent)
                 .WithMany()
                 .HasForeignKey(sp => sp.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // EnrollmentPeriod configuration
+        builder.Entity<EnrollmentPeriod>(entity =>
+        {
+            entity.HasKey(ep => ep.Id);
+            entity.Property(ep => ep.Nome).HasMaxLength(200).IsRequired();
+            entity.Property(ep => ep.IsActive).HasDefaultValue(true);
+            entity.Property(ep => ep.CreatedAt).HasDefaultValueSql("now()");
+
+            entity.HasIndex(ep => ep.TenantId);
+            entity.HasIndex(ep => new { ep.TenantId, ep.AnoLetivo });
+
+            entity.HasOne(ep => ep.Tenant)
+                .WithMany()
+                .HasForeignKey(ep => ep.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Enrollment configuration
+        builder.Entity<Enrollment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MotivoRejeicao).HasMaxLength(500);
+            entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.StudentId);
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+
+            entity.HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Period)
+                .WithMany(p => p.Enrollments)
+                .HasForeignKey(e => e.EnrollmentPeriodId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

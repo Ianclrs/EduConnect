@@ -186,12 +186,11 @@ public class StudentService : IStudentService
         if (student.Status == StudentStatus.Inativo)
             return;
 
-        // TODO: Spec 50 — check for active (approved) enrollment before soft-deleting.
-        // When Enrollment entity exists, uncomment:
-        // var hasActiveEnrollment = await _db.Enrollments
-        //     .AnyAsync(e => e.StudentId == id && e.Status == EnrollmentStatus.Approved);
-        // if (hasActiveEnrollment)
-        //     throw new StudentException("student_has_active_enrollment", 409);
+        // Check for active (approved) enrollment before soft-deleting
+        var hasActiveEnrollment = await _db.Enrollments
+            .AnyAsync(e => e.StudentId == id && e.Status == EnrollmentStatus.Aprovado);
+        if (hasActiveEnrollment)
+            throw new StudentException("student_has_active_enrollment", 409);
 
         student.Status = StudentStatus.Inativo;
         student.UpdatedAt = DateTime.UtcNow;
