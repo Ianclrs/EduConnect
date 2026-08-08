@@ -426,27 +426,3 @@ app.UseAuthorization();               // Spec 30 — checks roles/policies
 | NFR3: Reliability | AD-003 (fail-fast), TenantSeeder idempotency check |
 | NFR4: Maintainability | File / Module Layout table |
 | E1-E9 | Error Handling table, Edge Cases (E1-E10) |
-
----
-
-## Implementation Notes (audit 2026-08-08)
-
-Two intentional deviations from the original design were made during implementation:
-
-### N1: TenantMiddleware injects `TenantContext` instead of `ITenantContext`
-
-**Design:** `InvokeAsync(HttpContext context, ITenantContext tenantContext)`  
-**Actual:** `InvokeAsync(HttpContext context, TenantContext tenantContext)`
-
-**Reason:** `SetTenant()` is defined on the concrete `TenantContext` class, not on the `ITenantContext` interface. The interface exposes read-only access (`TenantId`, `IsResolved`) while mutation is a concern of the middleware. Both `TenantContext` and `ITenantContext` resolve to the same scoped instance via DI registration.
-
-### N2: TenantSeeder uses `IHostEnvironment` instead of `IWebHostEnvironment`
-
-**Design:** `SeedAsync(AppDbContext, IWebHostEnvironment, ILogger)`  
-**Actual:** `SeedAsync(AppDbContext, IHostEnvironment, ILogger)`
-
-**Reason:** `IWebHostEnvironment` requires the ASP.NET Core shared framework (only available in `Microsoft.NET.Sdk.Web` projects). The Infrastructure project uses `Microsoft.NET.Sdk`. `IHostEnvironment` (from `Microsoft.Extensions.Hosting.Abstractions`) provides the identical `IsDevelopment()` API without the ASP.NET dependency, keeping Infrastructure decoupled from the web layer.
-
-### N3: Migration created manually
-
-Migration `20260808190000_CreateTenantTable.cs` was hand-written because the `dotnet-ef` CLI tool is not installed and `dotnet tool install` is blocked by the SDK 10.0.302 NuGet bug (see L1 in `management/lessons.md`). The migration code is deterministic based on entity configuration.

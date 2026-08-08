@@ -59,7 +59,7 @@
 - **Verify:** File compiles: `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
 
 ### T20.6: Update AppDbContext
-- [x] done
+- [ ] pending
 - **Action:** Modify file `src/EduGestor.Infrastructure/Data/AppDbContext.cs`.
 - **Add:**
   1. Private readonly field: `private readonly ITenantContext _tenantContext;`
@@ -83,7 +83,7 @@
 - **Verify:** `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
 
 ### T20.7: Register services in DI (Program.cs)
-- [x] done
+- [ ] pending
 - **Action:** Modify file `src/EduGestor.Api/Program.cs`.
 - **Add BEFORE `builder.Build()`:**
   ```csharp
@@ -97,7 +97,7 @@
 - **Verify:** `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
 
 ### T20.8: Create TenantSeeder and wire into startup
-- [x] done
+- [ ] pending
 - **Action:** Create file `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs` in namespace `EduGestor.Infrastructure.Data.Seeders`.
 - **Static class `TenantSeeder` with method:**
   ```csharp
@@ -113,7 +113,7 @@
 - **Verify:** First run: tenant is created. Second run: message "Tenants already exist" logged, no duplicate. `dotnet build` exits 0.
 
 ### T20.9: Add unit tests
-- [x] done
+- [ ] pending
 - **Action:** Create test files in `tests/EduGestor.Infrastructure.Tests/` (or existing test project):
   - `TenantContextTests.cs`:
     - `SetTenant_ValidGuid_SetsTenantId()` — verifies `IsResolved` becomes true, `TenantId` returns the guid.
@@ -130,7 +130,7 @@
 - **Verify:** `dotnet test` — all tests pass with zero failures and zero skipped.
 
 ### T20.10: Add tenant-scoped entity assembly scan test
-- [x] done
+- [ ] pending
 - **Action:** Create file `tests/EduGestor.Core.Tests/TenantScopedEntitiesTests.cs` (or add to existing test project).
 - **Test method `AllTenantScopedEntities_ImplementITenantScoped`:**
   - Scan assembly `EduGestor.Core.dll` for all types that are classes (not abstract, not interface) with a public `TenantId` property of type `Guid`.
@@ -139,7 +139,7 @@
 - **Verify:** `dotnet test` — test passes (no entities match yet, so trivially passing until future specs add entities).
 
 ### T20.11: Create EF Core migration
-- [x] done
+- [ ] pending
 - **Action:** Run `dotnet ef migrations add CreateTenantTable --project src/EduGestor.Infrastructure --startup-project src/EduGestor.Api`.
 - **Verify:** Migration file is created in `src/EduGestor.Infrastructure/Migrations/`. SQL contains `CREATE TABLE "Tenants"` with unique index on `Slug`, column constraints (max length, not null, defaults). `dotnet build` exits 0.
 

@@ -139,7 +139,7 @@
 - **Verify:** `dotnet test` — test passes (no entities match yet, so trivially passing until future specs add entities).
 
 ### T20.11: Create EF Core migration
-- [x] done
+- [ ] blocked — NuGet restore broken (SDK bug), migration not generated
 - **Action:** Run `dotnet ef migrations add CreateTenantTable --project src/EduGestor.Infrastructure --startup-project src/EduGestor.Api`.
 - **Verify:** Migration file is created in `src/EduGestor.Infrastructure/Migrations/`. SQL contains `CREATE TABLE "Tenants"` with unique index on `Slug`, column constraints (max length, not null, defaults). `dotnet build` exits 0.
 

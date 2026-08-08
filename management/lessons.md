@@ -1,20 +1,91 @@
 # Lessons Learned
 
-*No lessons recorded yet — this file is populated as the project evolves.*
+---
+
+## L1: .NET SDK 10.0.302 — NuGet Restore / Build Quebrado
+
+**Date:** 2026-08-08  
+**Category:** tooling
+
+**Problem:** O .NET SDK 10.0.302 vem com `NuGet.Configuration.dll v7.6.0-rc.33009` (Release Candidate) que tem um bug no construtor estático da classe `ConfigurationDefaults`. Qualquer operação que toca no NuGet falha com:
+
+```
+error: Value cannot be null. (Parameter 'path1')
+The type initializer for 'NuGet.Configuration.ConfigurationDefaults' threw an exception.
+```
+
+Afeta TODOS os comandos:
+- `dotnet restore` ❌
+- `dotnet build` ❌ (tenta ler `project.assets.json` via NuGet)
+- `dotnet nuget *` ❌
+- `dotnet test` com build implícito ❌
+
+O reparo/reinstalação do SDK não resolve — a versão 10.0.302 é a mais recente disponível e mantém o mesmo binário RC bugado. O SDK 9.0.316 funciona mas não suporta `net10.0`. O SDK 10.0.202 está corrompido na instalação (pasta incompleta).
+
+**Solution:** Usar ferramentas alternativas que não dependem do SDK bugado:
+
+### Restore: `nuget.exe` standalone
+
+```bash
+# Baixar (uma vez)
+curl -sL "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -o /tmp/nuget.exe
+
+# Restaurar
+/tmp/nuget.exe restore EduGestor.sln
+```
+
+O `nuget.exe` standalone tem seu próprio runtime NuGet, não usa o `NuGet.Configuration.dll` do SDK.
+
+### Build: MSBuild do Visual Studio
+
+```bash
+MSBUILD="C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/bin/MSBuild.exe"
+
+# Build
+"$MSBUILD" EduGestor.sln -t:Build -p:Configuration=Debug -v:minimal
+```
+
+O MSBuild do VS é .NET Framework (não .NET Core), não sofre do bug do SDK. **Flags usam `-` (não `/`)**: `-t:Build`, `-p:Configuration=Debug`, `-v:minimal`.
+
+### Testes: `dotnet test --no-build`
+
+```bash
+dotnet test --no-build
+```
+
+Funciona porque só executa DLLs já compiladas, sem tocar no NuGet.
+
+### Migration EF Core
+
+O `dotnet ef` não está instalado e `dotnet tool install` depende do NuGet. Solução: criar a migration manualmente (o código C# é determinístico baseado nas entidades).
+
+### Fluxo completo de trabalho
+
+```bash
+# 1. Se adicionar/remover pacotes NuGet: editar .csproj, depois:
+/tmp/nuget.exe restore EduGestor.sln
+
+# 2. Build
+"$MSBUILD" EduGestor.sln -t:Build -p:Configuration=Debug -v:minimal
+
+# 3. Testes
+dotnet test --no-build
+```
+
+**Takeaway:** Sempre verificar se `dotnet restore` funciona ANTES de tentar buildar. Se falhar com `Value cannot be null`, não insistir — usar imediatamente o `nuget.exe` + `MSBuild.exe` do VS. Este padrão deve ser reutilizado em TODAS as specs até que o SDK seja atualizado para uma versão com NuGet estável (10.0.303+).
 
 ---
 
-## L1: [Lesson Title]
+## L2: `TreatWarningsAsErrors` + Code Analysis = Build Quebra em Testes
 
-**Date:** [YYYY-MM-DD]
-**Category:** [architecture / implementation / process / tooling / other]
+**Date:** 2026-08-08  
+**Category:** implementation
 
-**Problem:** [What difficulty was encountered?]
+**Problem:** O `Directory.Build.props` tem `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` e `<AnalysisLevel>latest-recommended</AnalysisLevel>`. Isso faz com que warnings de code analysis (CAxxxx) virem erros de build. Em código de testes e seeders, warnings como CA1848 (LoggerMessage delegates), CA1822 (método pode ser static), e CA1852 (tipo pode ser sealed) quebram o build desnecessariamente.
 
-**Solution:** [How was it resolved?]
+**Solution:**
 
-**Takeaway:** [What should be done to avoid similar issues in the future, and what solution pattern can be reused?]
+1. **Código de produção:** Corrigir os warnings (renomear parâmetros, adicionar `static`/`sealed`).
+2. **Seeders/Testes:** Suprimir com `#pragma warning disable` quando o warning for aceitável no contexto (ex: `LoggerExtensions` em seeders é aceitável).
 
----
-
-(Add more lessons as they are discovered during development.)
+**Takeaway:** Antes de implementar, sempre verificar o `Directory.Build.props` para saber o nível de rigor. Usar `#pragma warning disable CAxxxx` com moderação, apenas em código onde o warning é intencionalmente aceito.

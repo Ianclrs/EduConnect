@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using EduGestor.Infrastructure;
 using EduGestor.Infrastructure.Data;
+using EduGestor.Infrastructure.Tenancy;
+using EduGestor.Api.Middleware;
+using EduGestor.Infrastructure.Data.Seeders;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
@@ -23,6 +26,10 @@ try
     builder.Services.AddSwaggerGen();
     builder.Services.AddInfrastructure(builder.Configuration);
 
+    // Multi-tenancy (Spec 20)
+    builder.Services.AddScoped<TenantContext>();
+    builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
+
     var app = builder.Build();
 
     // Middleware pipeline
@@ -33,9 +40,15 @@ try
     }
 
     app.UseSerilogRequestLogging();
+
+    // Auth pipeline (Spec 30 will add UseAuthentication/UseAuthorization)
+    // app.UseAuthentication();               // Spec 30
+    app.UseMiddleware<TenantMiddleware>();     // Spec 20 — tenant resolution from JWT
+    // app.UseAuthorization();                // Spec 30
+
     app.MapControllers();
 
-    // Auto-migrate database in Development
+    // Auto-migrate database and seed in Development
     if (app.Environment.IsDevelopment())
     {
         using var scope = app.Services.CreateScope();
@@ -43,6 +56,8 @@ try
         try
         {
             await db.Database.MigrateAsync();
+            await TenantSeeder.SeedAsync(db, app.Environment,
+                scope.ServiceProvider.GetRequiredService<ILogger<Program>>());
         }
         catch (Exception ex)
         {

@@ -1,6 +1,6 @@
 ---
 name: Multi-Tenant Architecture
-status: audited
+status: planned
 references: V2, ADR-002
 ---
 
