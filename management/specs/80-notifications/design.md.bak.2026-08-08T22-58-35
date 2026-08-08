@@ -62,7 +62,7 @@ public class UserNotification
 ```csharp
 public record CreateNotificationRequest(string Titulo, string Mensagem, NotificationType Tipo, Guid? ReferenceId, List<Guid>? UserIds);
 public record BroadcastNotificationRequest(string Titulo, string Mensagem, NotificationType Tipo, Guid? ReferenceId);
-public record NotificationDto(Guid Id, Guid UserNotificationId, string Titulo, string Mensagem, string Tipo, Guid? ReferenceId, bool IsRead, DateTime CreatedAt);
+public record NotificationDto(Guid Id, string Titulo, string Mensagem, string Tipo, Guid? ReferenceId, bool IsRead, DateTime CreatedAt);
 ```
 
 ## NotificationController
@@ -90,8 +90,8 @@ public record NotificationDto(Guid Id, Guid UserNotificationId, string Titulo, s
 |---|---|
 | Notification entity | `src/EduGestor.Core/Entities/Notification.cs` |
 | UserNotification entity | `src/EduGestor.Core/Entities/UserNotification.cs` |
-| NotificationType enum | `src/EduGestor.Core/Entities/Notification.cs` (same file as Notification entity) |
-| DTOs | `src/EduGestor.Infrastructure/Contracts/NotificationDtos.cs` |
+| NotificationType enum | `src/EduGestor.Core/Entities/NotificationType.cs` |
+| DTOs | `src/EduGestor.Api/Contracts/NotificationDtos.cs` |
 | INotificationService + impl | `src/EduGestor.Infrastructure/Services/NotificationService.cs` |
 | NotificationController | `src/EduGestor.Api/Controllers/NotificationController.cs` |
 

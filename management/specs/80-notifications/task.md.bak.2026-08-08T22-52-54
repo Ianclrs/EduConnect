@@ -14,7 +14,7 @@
 
 ### T80.3: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Contracts/NotificationDtos.cs`.
+- **Action:** Create `src/EduGestor.Api/Contracts/NotificationDtos.cs`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T80.4: Create NotificationService
@@ -23,17 +23,17 @@
 - **Verify:** Unit tests for all methods.
 
 ### T80.5: Create NotificationController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/NotificationController.cs` with all endpoints.
 - **Verify:** Integration tests.
 
 ### T80.6: Integrate with Document verification
-- [x] done
+- [ ] pending
 - **Action:** In `DocumentService.VerifyAsync`, on reject: call `INotificationService.SendByStudentAsync`. Add `INotificationService` dependency to `DocumentService`.
 - **Verify:** Reject document → notification appears for student's parents.
 
 ### T80.7: Update AppDbContext + Migration
-- [x] done
+- [ ] pending
 - **Action:** Add `DbSet<Notification>`, `DbSet<UserNotification>`. Index on (UserId, IsRead). Run migration.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

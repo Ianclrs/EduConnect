@@ -26,7 +26,7 @@
 | 50 | Enrollment System (Matrícula) | audited | V5 |
 | 60 | Re-enrollment System (Rematrícula) | audited | V6 |
 | 70 | Document Management | audited | V7 |
-| 80 | Notification System | verified | V8 |
+| 80 | Notification System | audited | V8 |
 | 90 | Parent Portal API | verified | V9 |
 | 100 | Frontend Application (React + PWA) | verified | V10 |
 

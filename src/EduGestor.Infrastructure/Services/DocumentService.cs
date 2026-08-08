@@ -27,6 +27,7 @@ public class DocumentService : IDocumentService
 {
     private readonly AppDbContext _db;
     private readonly IFileStorage _storage;
+    private readonly INotificationService _notificationService;
 
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -35,10 +36,11 @@ public class DocumentService : IDocumentService
 
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
 
-    public DocumentService(AppDbContext db, IFileStorage storage)
+    public DocumentService(AppDbContext db, IFileStorage storage, INotificationService notificationService)
     {
         _db = db;
         _storage = storage;
+        _notificationService = notificationService;
     }
 
     // ── Documents ──────────────────────────────────────────────────
@@ -191,6 +193,15 @@ public class DocumentService : IDocumentService
 
             doc.Status = DocumentStatus.Rejeitado;
             doc.MotivoRejeicao = request.MotivoRejeicao;
+        }
+
+        // FR-008: Auto-notification on document rejection (before SaveChanges = same transaction)
+        if (!request.Approved)
+        {
+            var titulo = $"Documento rejeitado: {doc.DocumentType.Nome}";
+            var mensagem = $"O documento '{doc.NomeArquivo}' foi rejeitado. Motivo: {doc.MotivoRejeicao}";
+            await _notificationService.SendByStudentAsync(
+                doc.StudentId, titulo, mensagem, NotificationType.DocumentoPendente, doc.Id, tenantId);
         }
 
         await _db.SaveChangesAsync();

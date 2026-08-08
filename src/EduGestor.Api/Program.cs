@@ -12,6 +12,7 @@ using EduGestor.Infrastructure.Data;
 using EduGestor.Infrastructure.Services;
 using EduGestor.Infrastructure.Storage;
 using EduGestor.Infrastructure.Tenancy;
+using EduGestor.Infrastructure.Email;
 using EduGestor.Api.Middleware;
 using EduGestor.Infrastructure.Data.Seeders;
 
@@ -103,6 +104,12 @@ try
     builder.Services.Configure<FileStorageOptions>(builder.Configuration.GetSection(FileStorageOptions.SectionName));
     builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
     builder.Services.AddScoped<IDocumentService, DocumentService>();
+
+    // Email (Spec 80)
+    builder.Services.AddScoped<IEmailSender, ConsoleEmailSender>();
+
+    // Notification services (Spec 80)
+    builder.Services.AddScoped<INotificationService, NotificationService>();
 
     var app = builder.Build();
 

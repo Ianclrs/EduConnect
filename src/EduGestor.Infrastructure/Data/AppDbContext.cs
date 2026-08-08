@@ -26,6 +26,8 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<Enrollment> Enrollments { get; set; } = null!;
     public DbSet<DocumentType> DocumentTypes { get; set; } = null!;
     public DbSet<Document> Documents { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<UserNotification> UserNotifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -209,6 +211,41 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             entity.HasOne(d => d.Tenant)
                 .WithMany()
                 .HasForeignKey(d => d.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Notification configuration (Spec 80)
+        builder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Titulo).HasMaxLength(200).IsRequired();
+            entity.Property(n => n.Mensagem).HasMaxLength(2000).IsRequired();
+            entity.Property(n => n.Tipo).HasConversion<int>();
+            entity.Property(n => n.CreatedAt).HasDefaultValueSql("now()");
+
+            entity.HasIndex(n => n.TenantId);
+
+            entity.HasOne(n => n.Tenant)
+                .WithMany()
+                .HasForeignKey(n => n.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // UserNotification configuration (Spec 80)
+        builder.Entity<UserNotification>(entity =>
+        {
+            entity.HasKey(un => un.Id);
+
+            entity.HasIndex(un => new { un.UserId, un.IsRead });
+
+            entity.HasOne(un => un.Notification)
+                .WithMany(n => n.UserNotifications)
+                .HasForeignKey(un => un.NotificationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(un => un.User)
+                .WithMany()
+                .HasForeignKey(un => un.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
