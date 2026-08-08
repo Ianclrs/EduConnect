@@ -89,6 +89,9 @@ try
     builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
     builder.Services.AddScoped<IAuthService, AuthService>();
 
+    // Student services (Spec 40)
+    builder.Services.AddScoped<IStudentService, StudentService>();
+
     var app = builder.Build();
 
     // Middleware pipeline

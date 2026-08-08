@@ -18,22 +18,22 @@
 - **Verify:** `dotnet build` exits 0.
 
 ### T40.4: Create DTOs
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Contracts/StudentDtos.cs` with all records including `PagedResponse<T>`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T40.5: Create StudentService
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Services/StudentService.cs` with all 7 methods. Parent filter: join StudentParent.
 - **Verify:** Unit tests: CRUD, link/unlink, parent filter, soft-delete refusal with active enrollment.
 
 ### T40.6: Create StudentController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/StudentController.cs` with all endpoints and auth attributes.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T40.7: EF Migration and verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddStudents`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

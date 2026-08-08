@@ -33,7 +33,7 @@
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T40.7: EF Migration and verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddStudents`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

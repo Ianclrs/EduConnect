@@ -20,6 +20,8 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<Student> Students { get; set; } = null!;
+    public DbSet<StudentParent> StudentParents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -75,6 +77,44 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Student entity configuration
+        builder.Entity<Student>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Nome).HasMaxLength(200).IsRequired();
+            entity.Property(s => s.Cpf).HasMaxLength(14);
+            entity.Property(s => s.Turma).HasMaxLength(50).IsRequired();
+            entity.Property(s => s.Observacoes).HasMaxLength(1000);
+            entity.Property(s => s.Status).HasConversion<int>();
+            entity.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(s => s.UpdatedAt).HasDefaultValueSql("now()");
+
+            entity.HasIndex(s => s.TenantId);
+            entity.HasIndex(s => new { s.TenantId, s.Nome });
+            entity.HasIndex(s => new { s.TenantId, s.Cpf }).IsUnique().HasFilter("\"Cpf\" IS NOT NULL");
+
+            entity.HasOne(s => s.Tenant)
+                .WithMany()
+                .HasForeignKey(s => s.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StudentParent join entity configuration
+        builder.Entity<StudentParent>(entity =>
+        {
+            entity.HasKey(sp => new { sp.StudentId, sp.ParentId });
+
+            entity.HasOne(sp => sp.Student)
+                .WithMany(s => s.StudentParents)
+                .HasForeignKey(sp => sp.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(sp => sp.Parent)
+                .WithMany()
+                .HasForeignKey(sp => sp.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Rename Identity role table

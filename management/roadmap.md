@@ -22,7 +22,7 @@
 | 10 | Project Bootstrap & Infrastructure | audited | V1, ADR-001 |
 | 20 | Multi-Tenant Architecture | audited | V2, ADR-002 |
 | 30 | Authentication & Authorization | audited | V3, ADR-003 |
-| 40 | Student Management | verified | V4 |
+| 40 | Student Management | audited | V4 |
 | 50 | Enrollment System (Matrícula) | verified | V5 |
 | 60 | Re-enrollment System (Rematrícula) | verified | V6 |
 | 70 | Document Management | verified | V7 |
