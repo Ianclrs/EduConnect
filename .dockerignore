@@ -1,0 +1,12 @@
+**/.git/
+**/bin/
+**/obj/
+**/node_modules/
+**/.vs/
+**/.vscode/
+**/.env
+**/Dockerfile*
+**/docker-compose*
+
+# Exclude test projects from Docker build context
+tests/

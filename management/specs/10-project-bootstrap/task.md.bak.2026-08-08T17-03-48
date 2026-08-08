@@ -44,7 +44,7 @@
 
 ### T1.7: Configure appsettings
 - [x] Create `src/EduGestor.Api/appsettings.json` with Serilog configuration (MinimumLevel: Information, override AspNetCore/EFCore to Warning) and AllowedHosts: *
-- [x] Create `src/EduGestor.Api/appsettings.Development.json` with Serilog Debug level and ConnectionStrings:Default = `Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30`
+- [x] Create `src/EduGestor.Api/appsettings.Development.json` with Serilog Debug level and ConnectionStrings:Default = `Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30`
 
 ### T1.8: Create Dockerfile
 - [x] Create multi-stage Dockerfile in `src/EduGestor.Api/Dockerfile`
@@ -63,7 +63,7 @@
 - [x] Create `.dockerignore` at solution root with content from design.md (exclude .git, bin, obj, node_modules, .vs, .vscode, .env, Dockerfile*, docker-compose*, tests/)
 
 ### T1.11: Create .env.example
-- [x] `DB_PASSWORD=1234` — placeholder value
+- [x] `DB_PASSWORD=edugestor_dev` — placeholder value
 
 ### T1.12: Create HealthControllerTests
 - [x] Create `tests/EduGestor.Api.Tests/HealthControllerTests.cs`
@@ -75,7 +75,7 @@
 
 ### T1.13: Create database init script
 - [x] Create `db/init-db.sql` at solution root
-- [x] Script creates `edugestor` role (if not exists) with password `1234`
+- [x] Script creates `edugestor` role (if not exists) with password `edugestor_dev`
 - [x] Script creates `edugestor` database (if not exists) owned by `edugestor`
 - [x] Script grants ALL PRIVILEGES on database and schema public to `edugestor`
 - [x] Script uses `\set ON_ERROR_STOP on` to fail on first error

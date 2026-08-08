@@ -1,6 +1,6 @@
 ---
 name: Project Bootstrap & Infrastructure
-status: audited
+status: implemented
 references: V1, ADR-001
 ---
 

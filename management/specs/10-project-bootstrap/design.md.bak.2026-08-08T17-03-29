@@ -156,18 +156,16 @@ EduGestor.Api.Tests ──► EduGestor.Api
 | EF Core | 10.0.x |
 | Npgsql EF Core | 10.0.x |
 | PostgreSQL | 16-alpine (Docker) |
-| Swashbuckle | 10.x |
+| Swashbuckle | 7.x |
 | Serilog.AspNetCore | 9.x |
 
 ## NuGet Packages (EduGestor.Api)
 
 ```xml
 <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
-<PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
 <PackageReference Include="Serilog.AspNetCore" Version="9.*" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" />
-<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
-<InternalsVisibleTo Include="EduGestor.Api.Tests" />
 ```
 
 ## NuGet Packages (EduGestor.Infrastructure)
@@ -194,7 +192,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
         // Placeholder — entity configurations added by Specs 2-10
     }
@@ -236,7 +234,7 @@ psql -U postgres -f db/init-db.sql
 
 **What the script does:**
 
-1. Creates the `edugestor` role with password `1234` (if it doesn't already exist)
+1. Creates the `edugestor` role with password `edugestor_dev` (if it doesn't already exist)
 2. Creates the `edugestor` database owned by `edugestor` (if it doesn't already exist)
 3. Grants `ALL PRIVILEGES` on database and schema `public` to `edugestor`
 
@@ -244,7 +242,7 @@ psql -U postgres -f db/init-db.sql
 
 ```json
 "ConnectionStrings": {
-  "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30"
+  "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30"
 }
 ```
 
@@ -265,7 +263,7 @@ services:
     environment:
       POSTGRES_DB: edugestor
       POSTGRES_USER: edugestor
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edugestor_dev}
     ports:
       - "5432:5432"
     volumes:
@@ -282,7 +280,7 @@ services:
       dockerfile: src/EduGestor.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-1234}
+      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-edugestor_dev}
     ports:
       - "5000:8080"
     depends_on:
@@ -343,7 +341,7 @@ ENTRYPOINT ["dotnet", "EduGestor.Api.dll"]
     }
   },
   "ConnectionStrings": {
-    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30"
+    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30"
   }
 }
 ```
@@ -372,14 +370,11 @@ public class HealthController : ControllerBase
 ## Program.cs (src/EduGestor.Api/Program.cs)
 
 ```csharp
-using System.Globalization;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using EduGestor.Infrastructure;
-using EduGestor.Infrastructure.Data;
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .WriteTo.Console()
     .CreateBootstrapLogger();
 
 try
@@ -389,7 +384,7 @@ try
     // Serilog
     builder.Host.UseSerilog((context, services, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration)
-            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture));
+            .WriteTo.Console());
 
     // Services
     builder.Services.AddControllers();
@@ -414,14 +409,7 @@ try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        try
-        {
-            await db.Database.MigrateAsync();
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Database migration failed — database may not be available");
-        }
+        await db.Database.MigrateAsync();
     }
 
     app.Run();
@@ -434,8 +422,6 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-public partial class Program { }
 ```
 
 ## Directory.Build.props (root)
@@ -447,9 +433,7 @@ public partial class Program { }
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1903</WarningsNotAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
-    <NoWarn>$(NoWarn);NU1903;CA1707</NoWarn>
   </PropertyGroup>
 </Project>
 ```

@@ -1,6 +1,6 @@
 ---
 name: Project Bootstrap & Infrastructure
-status: audited
+status: verified
 references: V1, ADR-001
 ---
 
@@ -38,7 +38,7 @@ Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec ent
 | FR7 | A API DEVE usar Serilog para logging estruturado, com console sink configurado na inicialização | AC1 |
 | FR8 | Swagger UI DEVE estar disponível em `/swagger` quando `ASPNETCORE_ENVIRONMENT=Development` | AC6 |
 | FR9 | O DbContext do EF Core (AppDbContext) DEVE conectar ao PostgreSQL via Npgsql usando a connection string de `ConnectionStrings:Default` | AC4, AC5 |
-| FR10 | Migrations do EF Core DEVEM ser aplicadas automaticamente na inicialização em modo Development via `db.Database.MigrateAsync()`, com falha capturada e logada sem interromper a aplicação | AC5 |
+| FR10 | Migrations do EF Core DEVEM ser aplicadas automaticamente na inicialização em modo Development via `db.Database.Migrate()` | AC5 |
 | FR11 | Docker Compose DEVE definir serviço PostgreSQL 16-alpine com healthcheck (`pg_isready`) | AC2 |
 | FR12 | Docker Compose DEVE definir serviço API que depende do healthcheck do PostgreSQL, expondo porta 5000 mapeada para porta 8080 do container | AC2 |
 | FR13 | Dockerfile DEVE ser multi-stage (build SDK + runtime ASP.NET) usando `mcr.microsoft.com/dotnet/sdk:10.0` e `mcr.microsoft.com/dotnet/aspnet:10.0` | AC2 |
@@ -69,7 +69,7 @@ Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec ent
 | C5 | Arquivo de solução DEVE ser nomeado `EduGestor.sln` na raiz do repositório |
 | C6 | Docker Compose DEVE usar `docker compose` (sintaxe do plugin v2), não `docker-compose` (v1) |
 | C7 | Porta 5432 para PostgreSQL, porta 5000 para API — estas NÃO são negociáveis para evitar conflitos com as Specs 2-10 |
-| C8 | `.env.example` DEVE existir com `DB_PASSWORD=1234` — `.env` DEVE ser ignorado pelo git |
+| C8 | `.env.example` DEVE existir com `DB_PASSWORD=edugestor_dev` — `.env` DEVE ser ignorado pelo git |
 
 ## Casos de Borda e Estados de Erro
 
@@ -79,7 +79,7 @@ Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec ent
 | E2 | PostgreSQL fica indisponível após a API estar rodando | EF Core lança `NpgsqlException` na próxima query. Health check `/health/db` retorna 503. Sem crash — degradação graciosa |
 | E3 | Build Docker falha por falta da imagem .NET SDK | `docker compose build` retorna código de saída diferente de zero. Mensagem de erro do daemon do Docker |
 | E4 | Porta 5432 ou 5000 já em uso no host | Docker Compose falha ao iniciar com erro de conflito de porta. Usuário deve liberar as portas ou alterar sobrescritas no `.env` |
-| E5 | Migration do EF Core falha (ex.: schema incompatível em BD inexistente) | Auto-migration na inicialização captura exceção e loga warning via Serilog. API continua executando normalmente — `/health/db` retorna 503 |
+| E5 | Migration do EF Core falha (ex.: schema incompatível em BD existente) | Auto-migration na inicialização lança `MigrationException`. API falha ao iniciar — loga erro via Serilog. Isso é intencional: não executar com schema inválido |
 | E6 | `dotnet test` executa sem PostgreSQL disponível | HealthControllerTests para `/health/db` falham. Outros testes (apenas `/health`) passam. Testes que exigem BD devem ser marcados como integração |
 | E7 | Solução aberta em máquina sem .NET 10 SDK | `dotnet build` falha com erro de SDK não encontrado. Directory.Build.props especifica net10.0 que exige SDK 10 |
 | E8 | Arquivo `.env` contém caracteres especiais em DB_PASSWORD | PostgreSQL os aceita se devidamente codificados em URL. Connection string no docker-compose.yml passa o valor literalmente — caracteres especiais como `$`, `&` devem ser escapados ou evitados em dev |

@@ -19,7 +19,7 @@
 
 | # | Name | Status | References |
 |---|---|---|---|
-| 10 | Project Bootstrap & Infrastructure | verified | V1, ADR-001 |
+| 10 | Project Bootstrap & Infrastructure | audited | V1, ADR-001 |
 | 20 | Multi-Tenant Architecture | planned | V2, ADR-002 |
 | 30 | Authentication & Authorization | planned | V3, ADR-003 |
 | 40 | Student Management | planned | V4 |

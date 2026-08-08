@@ -236,7 +236,7 @@ psql -U postgres -f db/init-db.sql
 
 **What the script does:**
 
-1. Creates the `edugestor` role with password `1234` (if it doesn't already exist)
+1. Creates the `edugestor` role with password `edugestor_dev` (if it doesn't already exist)
 2. Creates the `edugestor` database owned by `edugestor` (if it doesn't already exist)
 3. Grants `ALL PRIVILEGES` on database and schema `public` to `edugestor`
 
@@ -244,7 +244,7 @@ psql -U postgres -f db/init-db.sql
 
 ```json
 "ConnectionStrings": {
-  "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30"
+  "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30"
 }
 ```
 
@@ -265,7 +265,7 @@ services:
     environment:
       POSTGRES_DB: edugestor
       POSTGRES_USER: edugestor
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edugestor_dev}
     ports:
       - "5432:5432"
     volumes:
@@ -282,7 +282,7 @@ services:
       dockerfile: src/EduGestor.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-1234}
+      - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-edugestor_dev}
     ports:
       - "5000:8080"
     depends_on:
@@ -343,7 +343,7 @@ ENTRYPOINT ["dotnet", "EduGestor.Api.dll"]
     }
   },
   "ConnectionStrings": {
-    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30"
+    "Default": "Host=localhost;Database=edugestor;Username=edugestor;Password=edugestor_dev;Timeout=5;Command Timeout=30"
   }
 }
 ```
