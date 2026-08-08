@@ -57,7 +57,7 @@ O EduGestor centraliza e automatiza todo o ciclo de vida acadêmico dos alunos: 
 
 ```
 ┌─────────────────────────────────────┐
-│  Presentation (React SPA + PWA)     │  ← Frontend (Spec 10)
+│  Presentation (React SPA + PWA)     │  ← Frontend (Spec 100)
 ├─────────────────────────────────────┤
 │  API Layer (ASP.NET Core Controllers)│  ← REST endpoints
 ├─────────────────────────────────────┤
@@ -115,29 +115,29 @@ O desenvolvimento segue o fluxo **SDD (Spec-Driven Development)**. Cada funciona
 
 | # | Spec | Status |
 |---|------|--------|
-| 1 | Project Bootstrap & Infrastructure | ✅ `verified` |
-| 2 | Multi-Tenant Architecture | 📋 `planned` |
-| 3 | Authentication & Authorization | 📋 `planned` |
-| 4 | Student Management | 📋 `planned` |
-| 5 | Enrollment System (Matrícula) | 📋 `planned` |
-| 6 | Re-enrollment System (Rematrícula) | 📋 `planned` |
-| 7 | Document Management | 📋 `planned` |
-| 8 | Notification System | 📋 `planned` |
-| 9 | Parent Portal API | 📋 `planned` |
-| 10 | Frontend Application (React + PWA) | 📋 `planned` |
+| 10 | Project Bootstrap & Infrastructure | ✅ `verified` |
+| 20 | Multi-Tenant Architecture | 📋 `planned` |
+| 30 | Authentication & Authorization | 📋 `planned` |
+| 40 | Student Management | 📋 `planned` |
+| 50 | Enrollment System (Matrícula) | 📋 `planned` |
+| 60 | Re-enrollment System (Rematrícula) | 📋 `planned` |
+| 70 | Document Management | 📋 `planned` |
+| 80 | Notification System | 📋 `planned` |
+| 90 | Parent Portal API | 📋 `planned` |
+| 100 | Frontend Application (React + PWA) | 📋 `planned` |
 
 ### Dependências entre Specs
 
 ```
-Spec 1: Bootstrap & Infra
-  └─► Spec 2: Multi-Tenant
-        ├─► Spec 3: Auth
-        │     ├─► Spec 4: Student Management
-        │     │     ├─► Spec 5: Enrollment ──► Spec 6: Re-enrollment
-        │     │     ├─► Spec 7: Documents
-        │     │     └─► Spec 9: Parent Portal API ──► Spec 10: Frontend
-        │     └─► Spec 8: Notifications ──► Spec 9: Parent Portal API
-        └─► Spec 7: Documents ──► Spec 8: Notifications
+Spec 10: Bootstrap & Infra
+  └─► Spec 20: Multi-Tenant
+        ├─► Spec 30: Auth
+        │     ├─► Spec 40: Student Management
+        │     │     ├─► Spec 50: Enrollment ──► Spec 60: Re-enrollment
+        │     │     ├─► Spec 70: Documents
+        │     │     └─► Spec 90: Parent Portal API ──► Spec 100: Frontend
+        │     └─► Spec 80: Notifications ──► Spec 90: Parent Portal API
+        └─► Spec 70: Documents ──► Spec 80: Notifications
 ```
 
 ---
@@ -198,18 +198,18 @@ EduConnect/
 │   ├── adr.md                  │  Decisões de arquitetura (ADR-001 a ADR-003)
 │   ├── lessons.md              │  Lições aprendidas
 │   └── specs/                  │  Specs individuais
-│       ├── 1-project-bootstrap/│    requirements.md · design.md · task.md
-│       ├── 2-multi-tenant/     │    requirements.md · design.md · task.md
-│       ├── 3-auth/             │    ...
-│       ├── 4-student-management/
-│       ├── 5-enrollment/
-│       ├── 6-reenrollment/
-│       ├── 7-documents/
-│       ├── 8-notifications/
-│       ├── 9-parent-portal/
-│       └── 10-frontend/
+│       ├── 10-project-bootstrap/│    requirements.md · design.md · task.md
+│       ├── 20-multi-tenant/     │    requirements.md · design.md · task.md
+│       ├── 30-auth/             │    ...
+│       ├── 40-student-management/
+│       ├── 50-enrollment/
+│       ├── 60-reenrollment/
+│       ├── 70-documents/
+│       ├── 80-notifications/
+│       ├── 90-parent-portal/
+│       └── 100-frontend/
 ├── .dscode/                    ← Estado interno do DsCode (settings, memória, logs)
-└── src/                        ← Código fonte (a ser criado na Spec 1)
+└── src/                        ← Código fonte (a ser criado na Spec 10)
     ├── EduGestor.Api/
     ├── EduGestor.Core/
     ├── EduGestor.Infrastructure/

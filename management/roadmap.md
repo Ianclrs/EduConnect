@@ -19,33 +19,33 @@
 
 | # | Name | Status | References |
 |---|---|---|---|
-| 1 | Project Bootstrap & Infrastructure | planned | V1, ADR-001 |
-| 2 | Multi-Tenant Architecture | planned | V2, ADR-002 |
-| 3 | Authentication & Authorization | planned | V3, ADR-003 |
-| 4 | Student Management | planned | V4 |
-| 5 | Enrollment System (Matrícula) | planned | V5 |
-| 6 | Re-enrollment System (Rematrícula) | planned | V6 |
-| 7 | Document Management | planned | V7 |
-| 8 | Notification System | planned | V8 |
-| 9 | Parent Portal API | planned | V9 |
-| 10 | Frontend Application (React + PWA) | planned | V10 |
+| 10 | Project Bootstrap & Infrastructure | verified | V1, ADR-001 |
+| 20 | Multi-Tenant Architecture | planned | V2, ADR-002 |
+| 30 | Authentication & Authorization | planned | V3, ADR-003 |
+| 40 | Student Management | planned | V4 |
+| 50 | Enrollment System (Matrícula) | planned | V5 |
+| 60 | Re-enrollment System (Rematrícula) | planned | V6 |
+| 70 | Document Management | planned | V7 |
+| 80 | Notification System | planned | V8 |
+| 90 | Parent Portal API | planned | V9 |
+| 100 | Frontend Application (React + PWA) | planned | V10 |
 
 ---
 
 ## Dependency Graph
 
 ```
-Spec 1: Bootstrap & Infra
-  └─► Spec 2: Multi-Tenant
-        ├─► Spec 3: Auth
-        │     ├─► Spec 4: Student Management
-        │     │     ├─► Spec 5: Enrollment
-        │     │     │     └─► Spec 6: Re-enrollment
-        │     │     ├─► Spec 7: Documents
-        │     │     └─► Spec 9: Parent Portal API
-        │     │           └─► Spec 10: Frontend
-        │     └─► Spec 8: Notifications
-        │           └─► Spec 9: Parent Portal API
-        └─► Spec 7: Documents
-              └─► Spec 8: Notifications
+Spec 10: Bootstrap & Infra
+  └─► Spec 20: Multi-Tenant
+        ├─► Spec 30: Auth
+        │     ├─► Spec 40: Student Management
+        │     │     ├─► Spec 50: Enrollment
+        │     │     │     └─► Spec 60: Re-enrollment
+        │     │     ├─► Spec 70: Documents
+        │     │     └─► Spec 90: Parent Portal API
+        │     │           └─► Spec 100: Frontend
+        │     └─► Spec 80: Notifications
+        │           └─► Spec 90: Parent Portal API
+        └─► Spec 70: Documents
+              └─► Spec 80: Notifications
 ```

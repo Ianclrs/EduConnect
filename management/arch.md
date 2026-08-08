@@ -15,7 +15,7 @@
 
 ```
 ┌─────────────────────────────────────┐
-│  Presentation (React SPA + PWA)     │  ← Frontend (Spec 10)
+│  Presentation (React SPA + PWA)     │  ← Frontend (Spec 100)
 ├─────────────────────────────────────┤
 │  API Layer (ASP.NET Core Controllers)│  ← REST endpoints
 ├─────────────────────────────────────┤
