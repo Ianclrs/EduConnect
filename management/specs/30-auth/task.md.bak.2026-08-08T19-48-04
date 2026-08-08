@@ -28,42 +28,42 @@
 - **Verify:** `dotnet build` exits 0.
 
 ### T30.6: Create JwtTokenGenerator
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs`. Access token: HMAC-SHA256, 15min, claims sub/email/tenant_id/role/name. Refresh: 64-byte random, 7-day.
 - **Verify:** Unit test: `GenerateAccessToken` returns valid JWT with all 5 claims.
 
 ### T30.7: Create AuthService
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Services/AuthService.cs` with all 6 methods. BCrypt via Identity. Refresh rotation.
 - **Verify:** Unit tests for register, login, refresh, revoke, forgot-password, reset-password.
 
 ### T30.8: Create AuthController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/AuthController.cs` with all 8 endpoints.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T30.9: Add Google OAuth
-- [x] done
+- [ ] pending
 - **Action:** Configure in Program.cs. Add GET /auth/google and GET /auth/google/callback.
 - **Verify:** Manual test with Google dev console.
 
 ### T30.10: Configure JWT and Identity in Program.cs
-- [x] done
+- [ ] pending
 - **Action:** `AddIdentity<User, IdentityRole<Guid>>()`, `AddJwtBearer()`, cookie policy. JWT params from appsettings.
 - **Verify:** `dotnet build` exits 0. Startup without errors.
 
 ### T30.11: Wire TenantMiddleware to Auth
-- [x] done
+- [ ] pending
 - **Action:** Verify TenantMiddleware extracts `tenant_id` from JWT claim correctly (Spec 20 middleware already built for this).
 - **Verify:** Request with valid JWT (tenant_id claim) → TenantContext resolved.
 
 ### T30.12: Add Authorize attributes test
-- [x] done
+- [ ] pending
 - **Action:** Create test endpoint with `[Authorize(Roles = "Admin")]`. Verify Admin→200, Staff→403, Parent→403, anonymous→401.
 - **Verify:** Integration test passes.
 
 ### T30.13: EF Migration and final verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddIdentity`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

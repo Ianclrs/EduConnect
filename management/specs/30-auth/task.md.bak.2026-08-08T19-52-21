@@ -53,17 +53,17 @@
 - **Verify:** `dotnet build` exits 0. Startup without errors.
 
 ### T30.11: Wire TenantMiddleware to Auth
-- [x] done
+- [ ] pending
 - **Action:** Verify TenantMiddleware extracts `tenant_id` from JWT claim correctly (Spec 20 middleware already built for this).
 - **Verify:** Request with valid JWT (tenant_id claim) → TenantContext resolved.
 
 ### T30.12: Add Authorize attributes test
-- [x] done
+- [ ] pending
 - **Action:** Create test endpoint with `[Authorize(Roles = "Admin")]`. Verify Admin→200, Staff→403, Parent→403, anonymous→401.
 - **Verify:** Integration test passes.
 
 ### T30.13: EF Migration and final verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddIdentity`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

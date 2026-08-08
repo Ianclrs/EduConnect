@@ -1,8 +1,15 @@
 using System.Globalization;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using EduGestor.Core.Entities;
 using EduGestor.Infrastructure;
+using EduGestor.Infrastructure.Auth;
 using EduGestor.Infrastructure.Data;
+using EduGestor.Infrastructure.Services;
 using EduGestor.Infrastructure.Tenancy;
 using EduGestor.Api.Middleware;
 using EduGestor.Infrastructure.Data.Seeders;
@@ -30,6 +37,58 @@ try
     builder.Services.AddScoped<TenantContext>();
     builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
+    // Identity (Spec 30)
+    builder.Services.AddIdentityCore<User>(options =>
+    {
+        options.Password.RequiredLength = 8;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.User.RequireUniqueEmail = false; // We enforce uniqueness per tenant
+    })
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+    // JWT Authentication (Spec 30)
+    var jwtSecret = builder.Configuration["Jwt:Secret"]
+        ?? throw new InvalidOperationException("Jwt:Secret is not configured");
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+    // Google OAuth (only if configured)
+    var googleClientId = builder.Configuration["Google:ClientId"];
+    if (!string.IsNullOrEmpty(googleClientId))
+    {
+        builder.Services.AddAuthentication().AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? string.Empty;
+        });
+    }
+
+    // Auth services (Spec 30)
+    builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+
     var app = builder.Build();
 
     // Middleware pipeline
@@ -41,10 +100,10 @@ try
 
     app.UseSerilogRequestLogging();
 
-    // Auth pipeline (Spec 30 will add UseAuthentication/UseAuthorization)
-    // app.UseAuthentication();               // Spec 30
+    // Auth pipeline (Spec 30)
+    app.UseAuthentication();
     app.UseMiddleware<TenantMiddleware>();     // Spec 20 — tenant resolution from JWT
-    // app.UseAuthorization();                // Spec 30
+    app.UseAuthorization();
 
     app.MapControllers();
 

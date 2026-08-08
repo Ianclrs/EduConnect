@@ -63,7 +63,7 @@
 - **Verify:** Integration test passes.
 
 ### T30.13: EF Migration and final verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet ef migrations add AddIdentity`. Run full test suite.
 - **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 

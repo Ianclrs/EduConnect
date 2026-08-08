@@ -89,3 +89,80 @@ dotnet test --no-build
 2. **Seeders/Testes:** Suprimir com `#pragma warning disable` quando o warning for aceitável no contexto (ex: `LoggerExtensions` em seeders é aceitável).
 
 **Takeaway:** Antes de implementar, sempre verificar o `Directory.Build.props` para saber o nível de rigor. Usar `#pragma warning disable CAxxxx` com moderação, apenas em código onde o warning é intencionalmente aceito.
+
+---
+
+## L3: Google OAuth com ClientId vazio crasha TODAS as requisições
+
+**Date:** 2026-08-08  
+**Category:** auth
+
+**Problem:** Configurar `.AddGoogle()` com `ClientId = ""` (string vazia) faz o `OAuthOptions.Validate()` lançar `ArgumentException` em toda requisição HTTP — mesmo endpoints anônimos como `/health`. O middleware de autenticação processa todas as requisições e valida as opções na primeira vez.
+
+**Solution:** Registrar Google OAuth condicionalmente — apenas quando `Google:ClientId` não está vazio:
+```csharp
+var googleClientId = builder.Configuration["Google:ClientId"];
+if (!string.IsNullOrEmpty(googleClientId))
+{
+    builder.Services.AddAuthentication().AddGoogle(options => { ... });
+}
+```
+
+**Takeaway:** Sempre verificar providers OAuth configurados com valores válidos antes de registrá-los. Providers com credenciais vazias quebram toda a pipeline de autenticação, não apenas o endpoint específico.
+
+---
+
+## L4: Global Query Filter bloqueia lookups pré-autenticação
+
+**Date:** 2026-08-08  
+**Category:** multi-tenancy + auth
+
+**Problem:** `User` implementa `ITenantScoped`, então o EF Core aplica o filtro global `WHERE TenantId = @ctx`. Durante login (`FindByEmailAsync`), o tenant ainda não está resolvido (usuário não autenticado). O filtro tenta acessar `ITenantContext.TenantId` que lança `TenantNotResolvedException`, fazendo o lookup de usuário falhar silenciosamente.
+
+**Solution:** Usar `.IgnoreQueryFilters()` em todas as queries que ocorrem antes da autenticação: `LoginAsync`, `ForgotPasswordAsync`, `ResetPasswordAsync`, `RefreshTokenAsync` (para buscar o user pelo token).
+
+```csharp
+var user = await _dbContext.Users
+    .IgnoreQueryFilters()
+    .FirstOrDefaultAsync(u => u.Email == request.Email);
+```
+
+**Takeaway:** Entidades `ITenantScoped` NÃO devem ser buscadas via `UserManager.FindByEmailAsync()` em fluxos pré-autenticação. Use sempre `DbContext.Users.IgnoreQueryFilters()`.
+
+---
+
+## L5: AddIdentityCore precisa de AddDefaultTokenProviders
+
+**Date:** 2026-08-08  
+**Category:** identity
+
+**Problem:** `AddIdentityCore<User>()` registra `UserManager` e `RoleManager`, mas NÃO inclui os token providers para password reset (`GeneratePasswordResetTokenAsync`). Tentar gerar/resetar tokens de senha lança `NotSupportedException: No IUserTwoFactorTokenProvider<TUser> named 'Default' is registered`.
+
+**Solution:** Sempre encadear `.AddDefaultTokenProviders()` após `.AddEntityFrameworkStores()`:
+```csharp
+services.AddIdentityCore<User>(...)
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();  // ← necessário para password reset
+```
+
+**Takeaway:** `AddIdentityCore` ≠ `AddIdentity`. O segundo já inclui token providers; o primeiro é minimalista e requer chamada explícita.
+
+---
+
+## L6: AddDefaultTokenProviders requer AddDataProtection em testes
+
+**Date:** 2026-08-08  
+**Category:** testing
+
+**Problem:** Em testes unitários com `ServiceCollection` manual, `.AddDefaultTokenProviders()` depende de `IDataProtectionProvider` que não está registrado. Causa `InvalidOperationException: Unable to resolve service for type 'Microsoft.AspNetCore.DataProtection.IDataProtectionProvider'`.
+
+**Solution:** Registrar `services.AddDataProtection()` antes de configurar Identity nos testes:
+```csharp
+services.AddDataProtection();
+services.AddIdentityCore<User>(...)
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+```
+
+**Takeaway:** Testes que usam Identity completo (com token providers) precisam de Data Protection registrado manualmente. Em produção, o `WebApplication.CreateBuilder` já configura isso automaticamente.

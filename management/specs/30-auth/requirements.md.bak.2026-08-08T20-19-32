@@ -1,6 +1,6 @@
 ---
 name: Authentication & Authorization
-status: audited
+status: planned
 references: V3, ADR-003
 ---
 

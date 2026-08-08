@@ -207,7 +207,7 @@ response.Cookies.Append("refresh_token", refreshToken.Token, cookieOptions);
 | User entity | `src/EduGestor.Core/Entities/User.cs` | Identity entity, implements ITenantScoped |
 | RefreshToken entity | `src/EduGestor.Core/Entities/RefreshToken.cs` | Token entity with expiry tracking |
 | UserRole enum | `src/EduGestor.Core/Entities/UserRole.cs` | Admin=0, Staff=1, Parent=2 |
-| Auth DTOs | `src/EduGestor.Infrastructure/Contracts/AuthDtos.cs` | Request/response records (moved from Api to avoid reverse dependency) |
+| Auth DTOs | `src/EduGestor.Api/Contracts/AuthDtos.cs` | Request/response records |
 | IAuthService + AuthService | `src/EduGestor.Infrastructure/Services/AuthService.cs` | Business logic |
 | IJwtTokenGenerator + impl | `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs` | JWT creation |
 | AuthController | `src/EduGestor.Api/Controllers/AuthController.cs` | REST endpoints + Google OAuth |
