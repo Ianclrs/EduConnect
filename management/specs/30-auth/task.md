@@ -1,74 +1,86 @@
 # Spec 30: Tasks — Authentication & Authorization
 
-## Task Checklist
+## Tasks
 
-### T3.1: Add Identity packages
-- [ ] Add `Microsoft.AspNetCore.Identity.EntityFrameworkCore` to Infrastructure
-- [ ] Add `Microsoft.AspNetCore.Authentication.JwtBearer` to Api
-- [ ] Add `Microsoft.AspNetCore.Authentication.Google` to Api
+### T30.1: Add Identity packages
+- [ ] pending
+- **Action:** Add NuGet packages: `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.Authentication.JwtBearer`, `Microsoft.AspNetCore.Authentication.Google` — all version `10.*`.
+- **Verify:** `dotnet restore` exits 0. Packages appear in `dotnet list package`.
 
-### T3.2: Create User entity
-- [ ] Create `src/EduGestor.Core/Entities/User.cs` implementing `ITenantScoped`
-- [ ] Create `src/EduGestor.Core/Entities/UserRole.cs` enum (Admin, Staff, Parent)
-- [ ] Properties: Id, TenantId, Email, Name, PasswordHash, Role, GoogleId?, IsActive, CreatedAt
-- [ ] Navigation: Tenant, RefreshTokens collection
+### T30.2: Create User entity
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/User.cs` implementing `ITenantScoped`. Create `src/EduGestor.Core/Entities/UserRole.cs` enum.
+- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
 
-### T3.3: Create RefreshToken entity
-- [ ] Create `src/EduGestor.Core/Entities/RefreshToken.cs`
-- [ ] Properties: Id, UserId, Token, ExpiresAt, CreatedAt, RevokedAt?
-- [ ] Helper: IsExpired, IsRevoked, IsActive
-- [ ] Navigation: User
+### T30.3: Create RefreshToken entity
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/RefreshToken.cs` with computed properties.
+- **Verify:** `dotnet build` exits 0.
 
-### T3.4: Update AppDbContext for Identity
-- [ ] Add `DbSet<User> Users`
-- [ ] Add `DbSet<RefreshToken> RefreshTokens`
-- [ ] Configure User: unique index on Email+TenantId, unique index on GoogleId
-- [ ] Configure RefreshToken: FK to User
+### T30.4: Update AppDbContext for Identity
+- [ ] pending
+- **Action:** Add `DbSet<User>`, `DbSet<RefreshToken>`. Configure indexes: unique (TenantId, Email), unique filtered GoogleId. FK RefreshToken→User.
+- **Verify:** `dotnet ef migrations add AddIdentity` succeeds.
 
-### T3.5: Create Auth DTOs
-- [ ] Create `src/EduGestor.Api/Contracts/AuthDtos.cs`
-- [ ] RegisterRequest, LoginRequest, AuthResponse, UserDto, ForgotPasswordRequest, ResetPasswordRequest
+### T30.5: Create Auth DTOs
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Contracts/AuthDtos.cs` with all records.
+- **Verify:** `dotnet build` exits 0.
 
-### T3.6: Create JwtTokenGenerator
-- [ ] Create `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs`
-- [ ] GenerateAccessToken: claims sub, email, tenant_id, role, name; 15min expiry
-- [ ] GenerateRefreshToken: 64-byte random, 7-day expiry
+### T30.6: Create JwtTokenGenerator
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs`. Access token: HMAC-SHA256, 15min, claims sub/email/tenant_id/role/name. Refresh: 64-byte random, 7-day.
+- **Verify:** Unit test: `GenerateAccessToken` returns valid JWT with all 5 claims.
 
-### T3.7: Create AuthService
-- [ ] Create `src/EduGestor.Infrastructure/Services/AuthService.cs`
-- [ ] Register: hash password with BCrypt, create user, return tokens
-- [ ] Login: verify password, return tokens, set refresh cookie
-- [ ] RefreshToken: validate, rotate, return new tokens
-- [ ] RevokeToken: mark as revoked
-- [ ] ForgotPassword: generate reset token, log to console (dev)
-- [ ] ResetPassword: validate token, update password
+### T30.7: Create AuthService
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Services/AuthService.cs` with all 6 methods. BCrypt via Identity. Refresh rotation.
+- **Verify:** Unit tests for register, login, refresh, revoke, forgot-password, reset-password.
 
-### T3.8: Create AuthController
-- [ ] Create `src/EduGestor.Api/Controllers/AuthController.cs`
-- [ ] POST /auth/register, POST /auth/login, POST /auth/refresh, POST /auth/revoke
-- [ ] POST /auth/forgot-password, POST /auth/reset-password
+### T30.8: Create AuthController
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Controllers/AuthController.cs` with all 8 endpoints.
+- **Verify:** Integration tests via `WebApplicationFactory`.
 
-### T3.9: Add Google OAuth
-- [ ] Configure Google authentication in Program.cs
-- [ ] GET /auth/google → Challenge()
-- [ ] GET /auth/google/callback → handle response, create/find user, return tokens
+### T30.9: Add Google OAuth
+- [ ] pending
+- **Action:** Configure in Program.cs. Add GET /auth/google and GET /auth/google/callback.
+- **Verify:** Manual test with Google dev console.
 
-### T3.10: Configure JWT and Identity in Program.cs
-- [ ] Add Identity with User entity
-- [ ] Add JWT Bearer auth with token validation params (issuer, audience, lifetime, signing key)
-- [ ] Configure cookie policy for refresh token
+### T30.10: Configure JWT and Identity in Program.cs
+- [ ] pending
+- **Action:** `AddIdentity<User, IdentityRole<Guid>>()`, `AddJwtBearer()`, cookie policy. JWT params from appsettings.
+- **Verify:** `dotnet build` exits 0. Startup without errors.
 
-### T3.11: Wire TenantMiddleware to Auth
-- [ ] Update `TenantMiddleware` to extract `tenant_id` from JWT claims
-- [ ] Return 401 for authenticated requests without tenant claim
+### T30.11: Wire TenantMiddleware to Auth
+- [ ] pending
+- **Action:** Verify TenantMiddleware extracts `tenant_id` from JWT claim correctly (Spec 20 middleware already built for this).
+- **Verify:** Request with valid JWT (tenant_id claim) → TenantContext resolved.
 
-### T3.12: Add Authorize attributes
-- [ ] Verify `[Authorize(Roles = "Admin")]` works on a test endpoint
-- [ ] Verify `[Authorize(Roles = "Admin,Staff")]` works
+### T30.12: Add Authorize attributes test
+- [ ] pending
+- **Action:** Create test endpoint with `[Authorize(Roles = "Admin")]`. Verify Admin→200, Staff→403, Parent→403, anonymous→401.
+- **Verify:** Integration test passes.
 
-### T3.13: Verify
-- [ ] `dotnet build` — zero errors
-- [ ] Register → Login → access protected endpoint → 200 OK
-- [ ] Google OAuth redirect flow works (test with Google dev console)
-- [ ] Refresh token flow works: expired access token → refresh → new access token
-- [ ] Revoke → refresh with revoked token → 401
+### T30.13: EF Migration and final verify
+- [ ] pending
+- **Action:** `dotnet ef migrations add AddIdentity`. Run full test suite.
+- **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
+
+## Task Dependency Order
+
+```
+T30.1 → T30.2/T30.3 → T30.4 → T30.5/T30.6 → T30.7 → T30.8 → T30.9/T30.10 → T30.11 → T30.12 → T30.13
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001/002/003/004: Auth flows | T30.7, T30.8 |
+| FR-005/006: Google OAuth | T30.9 |
+| FR-007/008: Password reset | T30.7, T30.8 |
+| FR-009/010: Entities | T30.2, T30.3 |
+| FR-011: JWT Claims | T30.6 |
+| FR-012: Authorize | T30.12 |
+| E1-E10: Edge cases | T30.7 (logic), T30.13 (tests) |

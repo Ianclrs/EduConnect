@@ -20,15 +20,15 @@
 | # | Name | Status | References |
 |---|---|---|---|
 | 10 | Project Bootstrap & Infrastructure | audited | V1, ADR-001 |
-| 20 | Multi-Tenant Architecture | planned | V2, ADR-002 |
-| 30 | Authentication & Authorization | planned | V3, ADR-003 |
-| 40 | Student Management | planned | V4 |
-| 50 | Enrollment System (Matrícula) | planned | V5 |
-| 60 | Re-enrollment System (Rematrícula) | planned | V6 |
-| 70 | Document Management | planned | V7 |
-| 80 | Notification System | planned | V8 |
-| 90 | Parent Portal API | planned | V9 |
-| 100 | Frontend Application (React + PWA) | planned | V10 |
+| 20 | Multi-Tenant Architecture | verified | V2, ADR-002 |
+| 30 | Authentication & Authorization | verified | V3, ADR-003 |
+| 40 | Student Management | verified | V4 |
+| 50 | Enrollment System (Matrícula) | verified | V5 |
+| 60 | Re-enrollment System (Rematrícula) | verified | V6 |
+| 70 | Document Management | verified | V7 |
+| 80 | Notification System | verified | V8 |
+| 90 | Parent Portal API | verified | V9 |
+| 100 | Frontend Application (React + PWA) | verified | V10 |
 
 ---
 

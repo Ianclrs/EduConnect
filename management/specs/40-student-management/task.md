@@ -1,40 +1,53 @@
 # Spec 40: Tasks — Student Management
 
-## Task Checklist
+## Tasks
 
-### T4.1: Create Student entity
-- [ ] Create `src/EduGestor.Core/Entities/Student.cs` implementing `ITenantScoped`
-- [ ] Properties: Id, TenantId, Nome, DataNascimento, Cpf, Turma, AnoLetivo, Status, Observacoes, CreatedAt, UpdatedAt
-- [ ] Create `StudentStatus` enum (Ativo, Inativo, Transferido)
+### T40.1: Create Student entity
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/Student.cs` implementing `ITenantScoped`. Create `StudentStatus` enum.
+- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
 
-### T4.2: Create StudentParent join entity
-- [ ] Create `src/EduGestor.Core/Entities/StudentParent.cs`
-- [ ] Composite key: StudentId + ParentId
-- [ ] Navigation properties
+### T40.2: Create StudentParent join entity
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/StudentParent.cs` with composite key.
+- **Verify:** `dotnet build` exits 0.
 
-### T4.3: Update AppDbContext
-- [ ] Add `DbSet<Student>`, `DbSet<StudentParent>`
-- [ ] Configure indexes: TenantId, TenantId+Nome, unique TenantId+Cpf (filtered)
-- [ ] Configure StudentParent composite key
+### T40.3: Update AppDbContext
+- [ ] pending
+- **Action:** Add `DbSet<Student>`, `DbSet<StudentParent>`. Configure indexes and composite key.
+- **Verify:** `dotnet build` exits 0.
 
-### T4.4: Create DTOs
-- [ ] Create `src/EduGestor.Api/Contracts/StudentDtos.cs`
-- [ ] StudentDto, CreateStudentRequest, UpdateStudentRequest, LinkParentRequest, ParentLinkDto, PagedResponse<T>
+### T40.4: Create DTOs
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Contracts/StudentDtos.cs` with all records including `PagedResponse<T>`.
+- **Verify:** `dotnet build` exits 0.
 
-### T4.5: Create StudentService
-- [ ] Create `src/EduGestor.Infrastructure/Services/StudentService.cs`
-- [ ] GetAllAsync with search, turma, status filters, pagination
-- [ ] Parent filter: only return linked students if user role=Parent
-- [ ] GetByIdAsync with parents eager-loaded
-- [ ] CreateAsync, UpdateAsync, DeleteAsync (soft delete)
-- [ ] LinkParentAsync, UnlinkParentAsync with validation
+### T40.5: Create StudentService
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Services/StudentService.cs` with all 7 methods. Parent filter: join StudentParent.
+- **Verify:** Unit tests: CRUD, link/unlink, parent filter, soft-delete refusal with active enrollment.
 
-### T4.6: Create StudentController
-- [ ] Create `src/EduGestor.Api/Controllers/StudentController.cs`
-- [ ] All endpoints with proper authorization attributes
-- [ ] Return 403 for Parent accessing non-linked student
+### T40.6: Create StudentController
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Controllers/StudentController.cs` with all endpoints and auth attributes.
+- **Verify:** Integration tests via `WebApplicationFactory`.
 
-### T4.7: Add EF migration and verify
-- [ ] `dotnet ef migrations add AddStudents`
-- [ ] `dotnet build` — zero errors
-- [ ] Test CRUD via Swagger
+### T40.7: EF Migration and verify
+- [ ] pending
+- **Action:** `dotnet ef migrations add AddStudents`. Run full test suite.
+- **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
+
+## Task Dependency Order
+
+```
+T40.1/T40.2 → T40.3 → T40.4 → T40.5 → T40.6 → T40.7
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001-007: CRUD + Link | T40.5, T40.6 |
+| FR-008-009: Entities | T40.1, T40.2, T40.3 |
+| FR-010: PagedResponse | T40.4 |
+| E1-E7: Edge cases | T40.5, T40.6, T40.7 |

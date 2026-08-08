@@ -1,0 +1,21 @@
+﻿  Determinando os projetos a serem restaurados...
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Core\EduGestor.Core.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Infrastructure\EduGestor.Infrastructure.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\tests\EduGestor.Api.Tests\EduGestor.Api.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Api\EduGestor.Api.csproj]
+
+FALHA da compila├º├úo.
+
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Core\EduGestor.Core.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Infrastructure\EduGestor.Infrastructure.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\tests\EduGestor.Api.Tests\EduGestor.Api.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Api\EduGestor.Api.csproj]
+    0 Aviso(s)
+    4 Erro(s)
+
+Tempo Decorrido 00:00:00.82
+  Determinando os projetos a serem restaurados...
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Core\EduGestor.Core.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\tests\EduGestor.Api.Tests\EduGestor.Api.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Api\EduGestor.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\NuGet.targets(782,5): error : Value cannot be null. (Parameter 'path1') [C:\Users\Thau├ú\Music\EduConnect\EduConnect\src\EduGestor.Infrastructure\EduGestor.Infrastructure.csproj]

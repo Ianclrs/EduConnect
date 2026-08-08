@@ -6,23 +6,102 @@ references: V4
 
 # Spec 40: Student Management
 
-## What This Spec Delivers
+## Value Delivery
 
-CRUD completo para gestão de alunos. Cada aluno pertence a um tenant. Inclui dados pessoais, contatos, filiação (vínculo com pais/responsáveis que são usuários do sistema), e informações acadêmicas (turma, ano letivo). Busca com filtros e paginação.
+Esta spec entrega **V4: Student Management** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **CRUD completo de alunos com dados pessoais, contatos, filiação e informações acadêmicas.**
+- **Busca e filtros:** Pesquisa por nome, filtro por turma e status, com paginação.
+- **Filiação:** Vincular/desvincular pais (Users com role=Parent) aos alunos via tabela de junção.
+- **Tenant-scoped:** Cada aluno pertence a um tenant via `ITenantScoped`. Isolamento automático via filtro global do EF Core.
 
-1. **AC1:** `GET /students` retorna lista paginada de alunos do tenant atual, com filtros opcionais: nome, turma, status.
-2. **AC2:** `GET /students/{id}` retorna detalhes do aluno incluindo pais vinculados.
-3. **AC3:** `POST /students` cria novo aluno (Admin/Staff only).
-4. **AC4:** `PUT /students/{id}` atualiza dados do aluno.
-5. **AC5:** `DELETE /students/{id}` soft-delete (desativa) o aluno.
-6. **AC6:** `POST /students/{id}/link-parent` vincula um usuário pai ao aluno.
-7. **AC7:** `DELETE /students/{id}/link-parent/{parentId}` desvincula um pai.
-8. **AC8:** Aluno tem campos: Nome, DataNascimento, CPF (opcional), Turma, AnoLetivo, Status (Ativo/Inativo/Transferido), Observacoes.
-9. **AC9:** Aluno implementa `ITenantScoped`.
-10. **AC10:** Pais só podem ver alunos vinculados a eles.
+## Functional Requirements
+
+### FR-001: Listar Alunos
+- `GET /students?search={nome}&turma={turma}&status={ativo|inativo|transferido}&page=1&pageSize=20` retorna `PagedResponse<StudentDto>`.
+- Admin/Staff: todos do tenant. Parent: apenas vinculados via StudentParent.
+- Ordenação: Nome ASC.
+- Acceptance: Admin vê todos. Parent vê só filhos. `dotnet test`.
+
+### FR-002: Detalhes do Aluno
+- `GET /students/{id}` retorna `StudentDto` com lista de pais vinculados.
+- Parent: 403 se não vinculado. Aluno de outro tenant: 404.
+- Acceptance: Admin vê detalhes+pais. Parent vinculado vê. `dotnet test`.
+
+### FR-003: Criar Aluno
+- `POST /students` (Admin/Staff) recebe `CreateStudentRequest`, retorna 201.
+- Valida: Nome required (max 200), DataNascimento no passado, Turma required (max 50), AnoLetivo >= 2000.
+- CPF opcional formatado; duplicado no tenant → 409.
+- Acceptance: Admin/Staff criam → 201. Parent → 403.
+
+### FR-004: Atualizar Aluno
+- `PUT /students/{id}` (Admin/Staff) atualiza, seta `UpdatedAt = UtcNow`.
+- Aluno de outro tenant → 404.
+- Acceptance: Atualiza → 200. Outro tenant → 404.
+
+### FR-005: Soft-Delete Aluno
+- `DELETE /students/{id}` (Admin only) seta `Status = Inativo`.
+- Idempotente: já inativo → 200.
+- Aluno com matrícula ativa (aprovada) → 409.
+- Acceptance: Admin deleta → 200. Staff → 403. Matrícula ativa → 409.
+
+### FR-006: Vincular Pai
+- `POST /students/{id}/link-parent` (Admin/Staff) recebe `{ parentId }`.
+- Valida: parentId é User com role=Parent e mesmo TenantId.
+- Vínculo duplicado → 409. Parent de outro tenant → 400. User não Parent → 400.
+- Acceptance: Admin vincula → 201.
+
+### FR-007: Desvincular Pai
+- `DELETE /students/{id}/link-parent/{parentId}` (Admin/Staff).
+- Vínculo inexistente → 404.
+- Acceptance: Remove → 200.
+
+### FR-008: Entidade Student
+- Implementa `ITenantScoped`: Id, TenantId, Nome (max 200), DataNascimento, Cpf (max 14, nullable), Turma (max 50), AnoLetivo (int), Status (Ativo=0, Inativo=1, Transferido=2), Observacoes (max 1000, nullable), CreatedAt, UpdatedAt.
+- Índices: TenantId, (TenantId, Nome), (TenantId, Cpf) unique filtrado WHERE Cpf IS NOT NULL.
+- Acceptance: Migration cria tabela Students.
+
+### FR-009: Entidade StudentParent
+- Chave composta (StudentId, ParentId). ParentId FK → Users.
+- Acceptance: Migration cria tabela StudentParents.
+
+### FR-010: PagedResponse Genérico
+- `PagedResponse<T>`: Items (List<T>), Total (int), Page (int), PageSize (int).
+- Reutilizado por todos endpoints de listagem.
+- Acceptance: Compila em Contracts.
+
+## Non-Functional Requirements
+
+### NFR-001: Performance
+- `GET /students` com 10.000 registros: < 500ms com índice em Nome e paginação 20.
+- `GET /students/{id}`: < 100ms.
+
+### NFR-002: Integridade
+- Nunca deleta fisicamente. Soft-delete apenas.
+- FK StudentParent com cascade restrict.
+
+### NFR-003: Segurança
+- Parent só vê filhos vinculados (filtro no serviço, não só no controller).
+- CPF validado no backend.
+
+## Constraints
+
+- Depende de Spec 10, 20, 30.
+- Student implementa ITenantScoped (Spec 20). StudentParent.ParentId referencia User.Id (Spec 30).
+- NÃO implementa upload de foto, histórico de alterações.
+
+## Edge Cases & Error States
+
+### E1: Parent acessa não vinculado → 403 `{ "error": "not_linked_to_student" }`.
+### E2: Soft-delete com matrícula ativa → 409 `{ "error": "student_has_active_enrollment" }`.
+### E3: Vincula pai de outro tenant → 400 `{ "error": "parent_belongs_to_different_tenant" }`.
+### E4: Vincula usuário não-Parent → 400 `{ "error": "user_is_not_parent" }`.
+### E5: CPF duplicado → 409 `{ "error": "cpf_already_exists" }`. Nulo não conflita.
+### E6: Aluno Transferido: visível mas bloqueia novas matrículas (Spec 50).
+### E7: Paginação inválida: page<1 assume 1, pageSize>100 cap 100.
 
 ## Dependencies
 
-- Spec 10, 2, 3 (precisa de tenant, auth, roles)
+- Spec 10: Bootstrap & Infrastructure
+- Spec 20: Multi-Tenant Architecture
+- Spec 30: Authentication & Authorization (User, roles)

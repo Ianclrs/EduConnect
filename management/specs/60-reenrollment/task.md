@@ -1,28 +1,43 @@
 # Spec 60: Tasks — Re-enrollment System
 
-## Task Checklist
+## Tasks
 
-### T6.1: Create DTOs
-- [ ] Create `src/EduGestor.Api/Contracts/ReenrollmentDtos.cs`
-- [ ] CreateReenrollmentRequest, ReenrollmentDetailDto
+### T60.1: Create DTOs
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Contracts/ReenrollmentDtos.cs` with `CreateReenrollmentRequest`, `ReenrollmentDetailDto`.
+- **Verify:** `dotnet build` exits 0.
 
-### T6.2: Create ReenrollmentService
-- [ ] Create `src/EduGestor.Infrastructure/Services/ReenrollmentService.cs`
-- [ ] CreateAsync: validate eligibility, carry forward valid docs, flag expired
-- [ ] GetAllAsync: query enrollments with prior-enrollment filter
-- [ ] GetByIdAsync: detailed with document status summary
-- [ ] ApproveAsync: update student AnoLetivo, set ApprovedAt
+### T60.2: Create ReenrollmentService
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Services/ReenrollmentService.cs`. Implement CreateAsync (eligibility + carry-forward), GetAllAsync, GetByIdAsync, ApproveAsync, RejectAsync.
+- **Verify:** Unit tests for eligibility validation, document carry-forward, expired doc flagging.
 
-### T6.3: Create ReenrollmentController
-- [ ] Create `src/EduGestor.Api/Controllers/ReenrollmentController.cs`
-- [ ] POST /reenrollments, GET /reenrollments, GET /reenrollments/{id}, POST /reenrollments/{id}/approve
+### T60.3: Create ReenrollmentController
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Controllers/ReenrollmentController.cs` with all 5 endpoints. Auth: Admin/Staff.
+- **Verify:** Integration tests.
 
-### T6.4: Add enrollment history endpoint
-- [ ] Add `GET /students/{id}/enrollment-history` to StudentController
-- [ ] Returns all Enrollment records for that student, ordered by AnoLetivo desc
+### T60.4: Add enrollment history endpoint
+- [ ] pending
+- **Action:** Add `GET /students/{id}/enrollment-history` to `StudentController` (Spec 40). Returns all Enrollments ordered by AnoLetivo DESC.
+- **Verify:** History returns correct records.
 
-### T6.5: Verify
-- [ ] Create enrollment period → Create student → Enroll → Approve
-- [ ] Create new period → Re-enroll same student
-- [ ] Verify valid documents carried forward
-- [ ] Verify expired documents flagged
+### T60.5: Verify
+- [ ] pending
+- **Action:** `dotnet test` — all pass. `dotnet build` — zero errors. Full workflow: period → enroll → approve → new period → re-enroll → verify docs.
+
+## Task Dependency Order
+
+```
+Spec 50 complete → T60.1 → T60.2 → T60.3 → T60.4 → T60.5
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001-003: CRUD | T60.2, T60.3 |
+| FR-004: Document carry-forward | T60.2 |
+| FR-005/006: Approve/Reject | T60.2, T60.3 |
+| FR-007: History | T60.4 |
+| E1-E5: Edge cases | T60.2, T60.5 |

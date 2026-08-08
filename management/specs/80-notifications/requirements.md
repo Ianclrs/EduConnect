@@ -6,23 +6,100 @@ references: V8
 
 # Spec 80: Notification System
 
-## What This Spec Delivers
+## Value Delivery
 
-Sistema de notificações para comunicação entre colégio e pais. Suporte a notificações in-app e envio de email. Tipos: documentos pendentes, reuniões, comunicados gerais, lembretes de matrícula/rematrícula. Tracking de leitura.
+Esta spec entrega **V8: Notification System** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **Criação de notificações** por Admin/Staff: para usuários específicos, broadcast para todos os pais, ou por aluno.
+- **Notificações in-app** com tracking de leitura (UserNotification).
+- **Tipos:** documentos pendentes, reuniões, comunicados gerais, lembretes de matrícula/rematrícula.
+- **Integração com Documentos:** rejeição de documento gera notificação automática para os pais.
+- **Suporte a envio de email:** placeholder com `IEmailSender` (console log em dev, SMTP em prod futuro).
 
-1. **AC1:** `POST /notifications` cria notificação (Admin/Staff): Título, Mensagem, Tipo, Destinatários.
-2. **AC2:** `POST /notifications/broadcast` envia para todos os pais do tenant (Admin only).
-3. **AC3:** `POST /notifications/by-student/{studentId}` envia para pais de aluno específico.
-4. **AC4:** `GET /notifications` lista notificações do usuário logado com filtro de lidas/não-lidas.
-5. **AC5:** `PUT /notifications/{id}/read` marca como lida.
-6. **AC6:** `PUT /notifications/read-all` marca todas como lidas.
-7. **AC7:** Notificações automáticas ao detectar documentos pendentes/vencidos (integrado com Spec 70).
-8. **AC8:** Suporte a envio de email (via SMTP configurável, console log em dev).
-9. **AC9:** `GET /notifications/unread-count` retorna contagem de não-lidas.
+## Functional Requirements
+
+### FR-001: Criar Notificação
+- `POST /notifications` (Admin/Staff) recebe `{ titulo, mensagem, tipo, referenceId?, userIds[] }`.
+- Cria `Notification` + `UserNotification` para cada userId.
+- Valida: título obrigatório (max 200), mensagem obrigatória (max 2000), userIds válidos e pertencem ao tenant.
+- Retorna 201 com `NotificationDto`.
+- Acceptance: Admin cria para 5 users → 5 UserNotifications criadas.
+
+### FR-002: Broadcast para Pais
+- `POST /notifications/broadcast` (Admin only) recebe `{ titulo, mensagem, tipo, referenceId? }`.
+- Cria `UserNotification` para TODOS os users com role=Parent no tenant.
+- Retorna 201 com contagem de destinatários.
+- Acceptance: Tenant com 50 pais → 50 UserNotifications.
+
+### FR-003: Notificação por Aluno
+- `POST /notifications/by-student/{studentId}` (Admin/Staff) recebe `{ titulo, mensagem, tipo }`.
+- Cria `UserNotification` para todos os pais vinculados ao aluno.
+- Aluno sem pais vinculados → 200 com count=0 (não é erro).
+- Acceptance: Aluno com 2 pais → 2 notificações.
+
+### FR-004: Listar Notificações do Usuário
+- `GET /notifications?unreadOnly=false&page=1&pageSize=20` lista notificações do usuário logado.
+- Ordenação: CreatedAt DESC. Filtro opcional: apenas não-lidas.
+- Retorna `PagedResponse<NotificationDto>` (inclui campo `isRead`).
+- Acceptance: Usuário vê só suas notificações.
+
+### FR-005: Marcar como Lida
+- `PUT /notifications/{id}/read` marca UserNotification como lida (`IsRead=true, ReadAt=UtcNow`).
+- Notificação de outro usuário → 404.
+- Já lida → 200 (idempotente).
+- Acceptance: Marca → 200. `isRead=true` na listagem.
+
+### FR-006: Marcar Todas como Lidas
+- `PUT /notifications/read-all` marca todas as UserNotifications do usuário como lidas.
+- Retorna contagem de atualizadas.
+- Acceptance: 10 não-lidas → 10 marcadas.
+
+### FR-007: Contagem de Não-Lidas
+- `GET /notifications/unread-count` retorna `{ count: int }`.
+- Acceptance: Usuário com 5 não-lidas → `{ count: 5 }`.
+
+### FR-008: Notificação Automática (Integração Spec 70)
+- Quando documento é rejeitado via `DocumentService.VerifyAsync`, sistema automaticamente cria notificação para pais do aluno.
+- Título: "Documento rejeitado: {tipo}". Mensagem: "O documento '{nome}' foi rejeitado. Motivo: {motivo}". Tipo: DocumentoPendente. ReferenceId: document.Id.
+- Acceptance: Rejeitar documento → notificação aparece para pais do aluno.
+
+### FR-009: Entidade Notification
+- Implementa `ITenantScoped`: Id, TenantId, Titulo (max 200), Mensagem (max 2000), Tipo (enum: Geral=0, DocumentoPendente=1, Reuniao=2, Matricula=3, Outro=4), ReferenceId (Guid?, nullable), CreatedAt.
+- Acceptance: Migration cria tabela Notifications.
+
+### FR-010: Entidade UserNotification
+- Id, NotificationId (FK), UserId (FK), IsRead (default false), ReadAt (nullable).
+- Índice composto: (UserId, IsRead) para consulta rápida de não-lidas.
+- Acceptance: Migration cria tabela UserNotifications.
+
+## Non-Functional Requirements
+
+### NFR-001: Performance
+- Broadcast para 1000 pais: < 3s (inserção em lote via `AddRange`).
+- Contagem de não-lidas: < 50ms (índice UserId+IsRead).
+
+### NFR-002: Confiabilidade
+- Criação de notificação é atômica: Notification + UserNotifications na mesma transação.
+- Falha no envio de email NÃO reverte criação da notificação in-app.
+
+## Constraints
+
+- Depende de Spec 10, 20, 30, 40.
+- Integração com Spec 70 (Documentos) é soft: se Spec 70 não estiver implementada, notificações manuais ainda funcionam.
+- Email: placeholder `IEmailSender` com implementação `ConsoleEmailSender` em dev. SMTP real em spec futura.
+
+## Edge Cases & Error States
+
+### E1: Broadcast com 0 pais → 200 com count=0.
+### E2: Notificação por aluno sem pais → 200 com count=0.
+### E3: Usuário tenta marcar notificação de outro → 404.
+### E4: userIds contém usuário de outro tenant → 400 `{ "error": "users_must_belong_to_same_tenant" }`.
+### E5: ReferenceId não validado (opaco — pode apontar para qualquer entidade).
 
 ## Dependencies
 
-- Spec 10, 2, 3, 4 (precisa de auth, alunos, pais)
-- Spec 70 (documentos — para notificações automáticas)
+- Spec 10: Bootstrap
+- Spec 20: Multi-Tenant
+- Spec 30: Auth & Roles (User entity)
+- Spec 40: Student Management (StudentParent para notificações por aluno)
+- Spec 70: Document Management (integração de notificação automática)

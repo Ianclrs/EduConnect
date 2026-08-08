@@ -1,48 +1,178 @@
 # Spec 20: Tasks — Multi-Tenant Architecture
 
-## Task Checklist
+## Tasks
 
-### T2.1: Create Tenant entity
-- [ ] Create `src/EduGestor.Core/Entities/Tenant.cs`
-- [ ] Properties: Id (Guid), Name (string), Slug (string), IsActive (bool), CreatedAt (DateTime)
+### T20.1: Create Tenant entity
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Core/Entities/Tenant.cs` with class `Tenant` in namespace `EduGestor.Core.Entities`.
+- **Properties:** `Id` (Guid), `Name` (string), `Slug` (string), `IsActive` (bool, default true), `CreatedAt` (DateTime).
+- **Verify:** File compiles: `dotnet build src/EduGestor.Core/EduGestor.Core.csproj` exits 0.
 
-### T2.2: Create ITenantScoped interface
-- [ ] Create `src/EduGestor.Core/Interfaces/ITenantScoped.cs`
-- [ ] Single property: `Guid TenantId { get; }`
+### T20.2: Create ITenantScoped interface
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Core/Interfaces/ITenantScoped.cs` with interface `ITenantScoped` in namespace `EduGestor.Core.Interfaces`.
+- **Property:** `Guid TenantId { get; }` (getter only).
+- **XML doc comment:** `/// <summary>Marker interface for entities whose data is scoped to a specific tenant.</summary>`
+- **Verify:** File compiles: `dotnet build src/EduGestor.Core/EduGestor.Core.csproj` exits 0.
 
-### T2.3: Create ITenantContext and TenantContext
-- [ ] Create `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs`
-- [ ] Interface `ITenantContext` with `TenantId` and `IsResolved`
-- [ ] Implementation `TenantContext` with `SetTenant(Guid)` method
+### T20.3: Create ITenantContext and TenantContext
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs` in namespace `EduGestor.Infrastructure.Tenancy`.
+- **Interface `ITenantContext`:**
+  - `Guid TenantId { get; }`
+  - `bool IsResolved { get; }`
+- **Class `TenantContext`:** Implements `ITenantContext`.
+  - Private field: `Guid? _tenantId` (initially null).
+  - `TenantId` getter: returns `_tenantId ?? throw new TenantNotResolvedException()`.
+  - `IsResolved` getter: returns `_tenantId.HasValue`.
+  - Method: `public void SetTenant(Guid tenantId) => _tenantId = tenantId;`
+- **Verify:** File compiles: `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
 
-### T2.4: Create TenantNotResolvedException
-- [ ] Create `src/EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs`
-- [ ] Inherits `InvalidOperationException`
+### T20.4: Create TenantNotResolvedException
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs` in namespace `EduGestor.Infrastructure.Tenancy`.
+- **Class:** Inherits `InvalidOperationException`.
+- **Default ctor:** `base("No tenant context resolved for the current request.")`
+- **Message ctor:** `base(message)` accepting a `string message` parameter.
+- **Verify:** File compiles: `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
 
-### T2.5: Create TenantMiddleware
-- [ ] Create `src/EduGestor.Api/Middleware/TenantMiddleware.cs`
-- [ ] Extract `tenant_id` claim from authenticated user
-- [ ] Call `ITenantContext.SetTenant(tenantId)`
-- [ ] Return 401 if no tenant claim on authenticated endpoint
+### T20.5: Create TenantMiddleware
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Api/Middleware/TenantMiddleware.cs` in namespace `EduGestor.Api.Middleware`.
+- **Constructor:** Accept `RequestDelegate next`.
+- **InvokeAsync method:**
+  - Parameters: `HttpContext context`, `ITenantContext tenantContext` (injected from DI).
+  - Get `endpoint` from `context.GetEndpoint()`.
+  - Check `endpoint?.Metadata.GetMetadata<AuthorizeAttribute>()` for `requireAuth` flag.
+  - If `context.User.Identity?.IsAuthenticated == true`:
+    - Read claim `"tenant_id"` from `context.User.FindFirst("tenant_id")`.
+    - If claim is null or `Guid.TryParse` fails:
+      - If `requireAuth`: set `Status 401`, `ContentType application/json`, write `{"error":"tenant_not_resolved","message":"Tenant context could not be resolved from the current request."}`, then `return` (short-circuit).
+    - If claim is valid: call `tenantContext.SetTenant(tenantId)`.
+  - Call `await _next(context)`.
+- **Error handling:**
+  - Missing claim + [Authorize] → 401 JSON.
+  - Missing claim + public endpoint → silently continue.
+  - Invalid GUID + [Authorize] → 401 JSON.
+  - Invalid GUID + public endpoint → silently continue.
+  - No authenticated user + [Authorize] → let Authorization middleware handle it.
+- **Verify:** File compiles: `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
 
-### T2.6: Update AppDbContext
-- [ ] Add `TenantContext _tenantContext` dependency
-- [ ] Add `DbSet<Tenant> Tenants`
-- [ ] Configure `Tenant` entity: unique index on `Slug`
-- [ ] Apply global query filter for all `ITenantScoped` entities
-- [ ] Override `SaveChangesAsync` to auto-set `TenantId` on new entities
+### T20.6: Update AppDbContext
+- [ ] pending
+- **Action:** Modify file `src/EduGestor.Infrastructure/Data/AppDbContext.cs`.
+- **Add:**
+  1. Private readonly field: `private readonly ITenantContext _tenantContext;`
+  2. Constructor parameter: add `ITenantContext tenantContext` and assign to `_tenantContext`.
+  3. Property: `public DbSet<Tenant> Tenants { get; set; } = null!;`
+  4. In `OnModelCreating`:
+     - Add `Tenant` entity configuration:
+       - `HasKey(t => t.Id)`
+       - `HasIndex(t => t.Slug).IsUnique()`
+       - `Property(t => t.Name).HasMaxLength(200).IsRequired()`
+       - `Property(t => t.Slug).HasMaxLength(100).IsRequired()`
+       - `Property(t => t.IsActive).HasDefaultValue(true)`
+       - `Property(t => t.CreatedAt).HasDefaultValueSql("now()")`
+     - Iterate `builder.Model.GetEntityTypes()`: for each type assignable to `ITenantScoped`, build expression `e => e.TenantId == _tenantContext.TenantId` and apply `HasQueryFilter(filter)`.
+  5. Override `SaveChangesAsync(CancellationToken)` and `SaveChangesAsync(bool, CancellationToken)`: call private `AutoSetTenantId()` method before `base` call.
+  6. Private method `AutoSetTenantId()`:
+     - If `!_tenantContext.IsResolved`, return.
+     - Iterate `ChangeTracker.Entries()` where `State == EntityState.Added && Entity is ITenantScoped`.
+     - If `entity.TenantId == Guid.Empty`: get `TenantId` property via reflection, set value to `_tenantContext.TenantId`.
+- **Import:** Add `using System.Linq.Expressions;`, `using EduGestor.Core.Entities;`, `using EduGestor.Core.Interfaces;`, `using EduGestor.Infrastructure.Tenancy;` as needed.
+- **Verify:** `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
 
-### T2.7: Register services in DI
-- [ ] Register `TenantContext` as scoped
-- [ ] Register `ITenantContext` using factory from `TenantContext`
-- [ ] Add `UseMiddleware<TenantMiddleware>()` after `UseAuthentication()`
+### T20.7: Register services in DI (Program.cs)
+- [ ] pending
+- **Action:** Modify file `src/EduGestor.Api/Program.cs`.
+- **Add BEFORE `builder.Build()`:**
+  ```csharp
+  builder.Services.AddScoped<TenantContext>();
+  builder.Services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
+  ```
+- **Add AFTER `app.UseAuthentication()` and BEFORE `app.UseAuthorization()`:**
+  ```csharp
+  app.UseMiddleware<TenantMiddleware>();
+  ```
+- **Verify:** `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
 
-### T2.8: Create TenantSeeder
-- [ ] Create `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs`
-- [ ] If no tenants exist, create default: "Default School" / "default"
-- [ ] Seed admin user: admin@default.local (only if Spec 30 is done)
+### T20.8: Create TenantSeeder and wire into startup
+- [ ] pending
+- **Action:** Create file `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs` in namespace `EduGestor.Infrastructure.Data.Seeders`.
+- **Static class `TenantSeeder` with method:**
+  ```csharp
+  public static async Task SeedAsync(AppDbContext dbContext,
+      IWebHostEnvironment env, ILogger logger)
+  ```
+  - If `!env.IsDevelopment()`: log "Skipping — not Development environment" and return.
+  - If `await dbContext.Tenants.AnyAsync()`: log "Tenants already exist, skipping" and return.
+  - Create `new Tenant { Id = Guid.NewGuid(), Name = "Default School", Slug = "default", IsActive = true, CreatedAt = DateTime.UtcNow }`.
+  - Add to `dbContext.Tenants`, call `await dbContext.SaveChangesAsync()`.
+  - Log "Created default tenant 'Default School' (Id: {Id})".
+- **Wire in Program.cs:** After `await app.ApplyMigrationsAsync()` (or equivalent), call `await TenantSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), app.Environment, logger)`.
+- **Verify:** First run: tenant is created. Second run: message "Tenants already exist" logged, no duplicate. `dotnet build` exits 0.
 
-### T2.9: Verify
-- [ ] `dotnet build` — zero errors
-- [ ] EF migration generates `Tenants` table with unique slug index
-- [ ] Manual test: endpoint with auth rejects request without tenant claim
+### T20.9: Add unit tests
+- [ ] pending
+- **Action:** Create test files in `tests/EduGestor.Infrastructure.Tests/` (or existing test project):
+  - `TenantContextTests.cs`:
+    - `SetTenant_ValidGuid_SetsTenantId()` — verifies `IsResolved` becomes true, `TenantId` returns the guid.
+    - `TenantId_NotSet_ThrowsTenantNotResolvedException()` — fresh `TenantContext`, accessing `TenantId` throws.
+  - `TenantNotResolvedExceptionTests.cs`:
+    - `DefaultConstructor_HasExpectedMessage()` — message equals `"No tenant context resolved for the current request."`.
+    - `MessageConstructor_PreservesMessage()` — custom message is preserved.
+  - `TenantSeederTests.cs`:
+    - `SeedAsync_NoTenants_CreatesDefaultTenant()` — empty DB, seeding creates one tenant with Slug="default".
+    - `SeedAsync_TenantsExist_DoesNotDuplicate()` — tenant exists, seeding creates no new tenant.
+    - `SeedAsync_Production_Skips()` — `IWebHostEnvironment.IsDevelopment()` is false, no tenant created.
+  - `AutoSetTenantIdTests.cs`:
+    - Use EF Core InMemory provider. Add a stub `ITenantScoped` entity with `TenantId = Guid.Empty`, save, verify `TenantId` is set to tenant context value.
+- **Verify:** `dotnet test` — all tests pass with zero failures and zero skipped.
+
+### T20.10: Add tenant-scoped entity assembly scan test
+- [ ] pending
+- **Action:** Create file `tests/EduGestor.Core.Tests/TenantScopedEntitiesTests.cs` (or add to existing test project).
+- **Test method `AllTenantScopedEntities_ImplementITenantScoped`:**
+  - Scan assembly `EduGestor.Core.dll` for all types that are classes (not abstract, not interface) with a public `TenantId` property of type `Guid`.
+  - For each such type, assert `typeof(ITenantScoped).IsAssignableFrom(type)` — fails if an entity has `TenantId` but forgot to implement `ITenantScoped`.
+  - This prevents future developers/agents from adding tenant-scoped entities without the interface.
+- **Verify:** `dotnet test` — test passes (no entities match yet, so trivially passing until future specs add entities).
+
+### T20.11: Create EF Core migration
+- [ ] pending
+- **Action:** Run `dotnet ef migrations add CreateTenantTable --project src/EduGestor.Infrastructure --startup-project src/EduGestor.Api`.
+- **Verify:** Migration file is created in `src/EduGestor.Infrastructure/Migrations/`. SQL contains `CREATE TABLE "Tenants"` with unique index on `Slug`, column constraints (max length, not null, defaults). `dotnet build` exits 0.
+
+## Task Dependency Order
+
+```
+T20.1 ──┐
+T20.2 ──┤
+T20.3 ──┼──► T20.6 ──► T20.7 ──► T20.11
+T20.4 ──┤                       │
+T20.5 ──┘                       │
+                                ▼
+                   T20.8 ──► T20.9 ──► T20.10
+```
+
+All dependency edges are: tasks must be completed before their downstream tasks. T20.1-T20.5 are independent and can be done in parallel.
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR1: Tenant Entity | T20.1, T20.11 |
+| FR2: ITenantScoped | T20.2 |
+| FR3: Tenant-Scoped Entities | T20.2, T20.10 |
+| FR4: Global Query Filter | T20.6 |
+| FR5: TenantMiddleware | T20.5, T20.7 |
+| FR6: ITenantContext | T20.3, T20.7 |
+| FR7: TenantNotResolvedException | T20.4 |
+| FR8: TenantSeeder | T20.8 |
+| FR9: SaveChanges Auto-Set | T20.6, T20.9 |
+| FR10: Tenant Table | T20.1, T20.6, T20.11 |
+| NFR1: Performance | T20.9 |
+| NFR2: Security | T20.5 guideline, T20.10 |
+| NFR3: Reliability | T20.3, T20.4, T20.8, T20.9 |
+| NFR4: Maintainability | All tasks (file placement) |
+| E1-E10: Edge Cases | T20.5, T20.8, T20.9, T20.10 |

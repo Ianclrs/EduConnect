@@ -1,5 +1,30 @@
 # Spec 40: Design — Student Management
 
+## Design Approach
+
+CRUD de estudantes com entidade `Student` implementando `ITenantScoped` para isolamento automático por tenant. Tabela de junção `StudentParent` para vínculo muitos-para-muitos entre Students e Users (role=Parent).
+
+**Segurança:** Parent só acessa filhos vinculados — filtro implementado no serviço, não apenas no controller. Admin/Staff veem todos os alunos do tenant.
+
+## Architecture Decisions
+
+- **AD-001: Soft-delete** — `DELETE` seta `Status=Inativo` em vez de remover. Dados nunca são perdidos.
+- **AD-002: StudentParent como join table** — evita poluir User com lista de filhos. Separação clara de responsabilidades.
+- **AD-003: CPF index filtrado** — permite múltiplos nulos sem violar unicidade.
+
+## Data Flow
+
+```
+GET /students?search=João&turma=A&page=1
+  → StudentService.GetAllAsync(query, tenantId, userId, role)
+    → if role=Parent: inner join StudentParent WHERE ParentId=userId
+    → if role=Admin/Staff: no join, apenas filtro TenantId (global query filter)
+    → search: WHERE Nome ILIKE '%João%'
+    → turma filter: WHERE Turma = 'A'
+    → ORDER BY Nome ASC, OFFSET 0 LIMIT 20
+  → return PagedResponse<StudentDto>
+```
+
 ## Domain Entities
 
 ### Student (EduGestor.Core/Entities/Student.cs)
@@ -22,15 +47,10 @@ public class Student : ITenantScoped
     public ICollection<StudentParent> StudentParents { get; set; } = [];
 }
 
-public enum StudentStatus
-{
-    Ativo = 0,
-    Inativo = 1,
-    Transferido = 2
-}
+public enum StudentStatus { Ativo = 0, Inativo = 1, Transferido = 2 }
 ```
 
-### StudentParent — join table (EduGestor.Core/Entities/StudentParent.cs)
+### StudentParent (EduGestor.Core/Entities/StudentParent.cs)
 ```csharp
 public class StudentParent
 {
@@ -41,25 +61,13 @@ public class StudentParent
 }
 ```
 
-## DTOs
-
+## DTOs (EduGestor.Api/Contracts/StudentDtos.cs)
 ```csharp
-public record StudentDto(
-    Guid Id, string Nome, DateTime DataNascimento, string? Cpf,
-    string Turma, int AnoLetivo, string Status, string? Observacoes,
-    DateTime CreatedAt, List<ParentLinkDto> Parents);
-
-public record CreateStudentRequest(
-    string Nome, DateTime DataNascimento, string? Cpf,
-    string Turma, int AnoLetivo, string? Observacoes);
-
-public record UpdateStudentRequest(
-    string Nome, DateTime DataNascimento, string? Cpf,
-    string Turma, int AnoLetivo, string? Observacoes);
-
+public record StudentDto(Guid Id, string Nome, DateTime DataNascimento, string? Cpf, string Turma, int AnoLetivo, string Status, string? Observacoes, DateTime CreatedAt, List<ParentLinkDto> Parents);
+public record CreateStudentRequest(string Nome, DateTime DataNascimento, string? Cpf, string Turma, int AnoLetivo, string? Observacoes);
+public record UpdateStudentRequest(string Nome, DateTime DataNascimento, string? Cpf, string Turma, int AnoLetivo, string? Observacoes);
 public record LinkParentRequest(Guid ParentId);
 public record ParentLinkDto(Guid ParentId, string ParentName, string ParentEmail);
-
 public record PagedResponse<T>(List<T> Items, int Total, int Page, int PageSize);
 ```
 
@@ -68,30 +76,18 @@ public record PagedResponse<T>(List<T> Items, int Total, int Page, int PageSize)
 | Endpoint | Auth |
 |---|---|
 | `GET /students?search=&turma=&status=&page=1&pageSize=20` | Admin, Staff, Parent |
-| `GET /students/{id}` | Admin, Staff, Parent (own children only) |
+| `GET /students/{id}` | Admin, Staff, Parent (own children) |
 | `POST /students` | Admin, Staff |
 | `PUT /students/{id}` | Admin, Staff |
 | `DELETE /students/{id}` | Admin only |
 | `POST /students/{id}/link-parent` | Admin, Staff |
 | `DELETE /students/{id}/link-parent/{parentId}` | Admin, Staff |
 
-## StudentService (EduGestor.Infrastructure/Services/StudentService.cs)
-
-- `GetAllAsync(query, tenantId, userId?, userRole?)` — paginated, filtered. Parents only see linked children.
-- `GetByIdAsync(id, tenantId)` — with parents included.
-- `CreateAsync(request, tenantId)` — validate, create, save.
-- `UpdateAsync(id, request, tenantId)` — find, update, save.
-- `DeleteAsync(id, tenantId)` — set Status=Inativo.
-- `LinkParentAsync(studentId, parentId, tenantId)` — validate parent exists and belongs to same tenant.
-- `UnlinkParentAsync(studentId, parentId, tenantId)` — remove join.
-
 ## AppDbContext Updates
-
 ```csharp
 public DbSet<Student> Students { get; set; }
 public DbSet<StudentParent> StudentParents { get; set; }
 
-// OnModelCreating:
 builder.Entity<Student>(e => {
     e.HasIndex(s => s.TenantId);
     e.HasIndex(s => new { s.TenantId, s.Nome });
@@ -102,7 +98,18 @@ builder.Entity<StudentParent>(e => {
 });
 ```
 
-## File Locations
+## Error Handling
+
+| Condition | HTTP | Body |
+|---|---|---|
+| Student not found (wrong tenant) | 404 | `{"error":"student_not_found"}` |
+| Parent not linked to student | 403 | `{"error":"not_linked_to_student"}` |
+| CPF already exists | 409 | `{"error":"cpf_already_exists"}` |
+| Parent from different tenant | 400 | `{"error":"parent_belongs_to_different_tenant"}` |
+| User is not a Parent | 400 | `{"error":"user_is_not_parent"}` |
+| Student has active enrollment | 409 | `{"error":"student_has_active_enrollment"}` |
+
+## File / Module Layout
 
 | File | Path |
 |---|---|
@@ -112,3 +119,15 @@ builder.Entity<StudentParent>(e => {
 | Student DTOs | `src/EduGestor.Api/Contracts/StudentDtos.cs` |
 | IStudentService + impl | `src/EduGestor.Infrastructure/Services/StudentService.cs` |
 | StudentController | `src/EduGestor.Api/Controllers/StudentController.cs` |
+
+## Cross-Reference: Requirements → Design
+
+| Requirement | Covered By |
+|---|---|
+| FR-001/002 List/Detail | StudentService.GetAllAsync/GetByIdAsync, Controller |
+| FR-003/004 Create/Update | StudentService, DTOs |
+| FR-005 Soft-delete | StudentService.DeleteAsync |
+| FR-006/007 Link/Unlink | StudentService.LinkParentAsync/UnlinkParentAsync |
+| FR-008/009 Entities | Domain Entities section, AppDbContext |
+| FR-010 PagedResponse | DTOs |
+| E1-E7 Edge cases | Error Handling table |

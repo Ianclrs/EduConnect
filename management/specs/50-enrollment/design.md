@@ -1,5 +1,37 @@
 # Spec 50: Design — Enrollment System
 
+## Design Approach
+
+Sistema de matrícula com **máquina de estados server-side**. A entidade `Enrollment` gerencia o ciclo de vida da matrícula: rascunho → pendente → documentacao_pendente → aprovado/rejeitado/cancelado. `EnrollmentPeriod` define janelas de matrícula por ano letivo.
+
+**State machine**: método `CanTransition(from, to): bool` valida cada transição. Transações atômicas: status + side effects (Student.Status, ApprovedAt) na mesma operação EF Core.
+
+## Architecture Decisions
+
+- **AD-001: Máquina de estados explícita** — transições inválidas rejeitadas com 400 + estados permitidos listados.
+- **AD-002: Período de matrícula por tenant** — cada tenant gerencia seus próprios períodos. Sem sobreposição de datas.
+- **AD-003: DocumentacaoPendente como estado intermediário** — permite fluxo parcial: matrícula existe mas aguarda documentos (Spec 70).
+
+## Data Flow: Submeter → Aprovar
+
+```
+POST /enrollments/{id}/submit
+  → EnrollmentService.SubmitAsync(id, tenantId)
+    → Validate: CanTransition(Rascunho, Pendente)? YES
+    → Check pending required documents (Spec 70)
+    → If pending: Status = DocumentacaoPendente
+    → If no pending: Status = Pendente
+    → SaveChangesAsync()
+
+POST /enrollments/{id}/approve
+  → EnrollmentService.ApproveAsync(id, tenantId)
+    → Validate: CanTransition(current, Aprovado)? YES
+    → Validate: no pending required documents
+    → Status = Aprovado, ApprovedAt = UtcNow
+    → Student.Status = Ativo, Student.AnoLetivo = Period.AnoLetivo
+    → SaveChangesAsync() (atomic)
+```
+
 ## Domain Entities
 
 ### EnrollmentPeriod (EduGestor.Core/Entities/EnrollmentPeriod.cs)
@@ -8,13 +40,12 @@ public class EnrollmentPeriod : ITenantScoped
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
-    public string Nome { get; set; } = string.Empty;       // "Matrículas 2027"
+    public string Nome { get; set; } = string.Empty;
     public DateTime DataInicio { get; set; }
     public DateTime DataFim { get; set; }
     public int AnoLetivo { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     public Tenant Tenant { get; set; } = null!;
     public ICollection<Enrollment> Enrollments { get; set; } = [];
 }
@@ -32,7 +63,6 @@ public class Enrollment : ITenantScoped
     public string? MotivoRejeicao { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovedAt { get; set; }
-
     public Student Student { get; set; } = null!;
     public EnrollmentPeriod Period { get; set; } = null!;
     public Tenant Tenant { get; set; } = null!;
@@ -40,32 +70,27 @@ public class Enrollment : ITenantScoped
 
 public enum EnrollmentStatus
 {
-    Rascunho = 0,
-    Pendente = 1,
-    DocumentacaoPendente = 2,
-    Aprovado = 3,
-    Rejeitado = 4,
-    Cancelado = 5
+    Rascunho = 0, Pendente = 1, DocumentacaoPendente = 2,
+    Aprovado = 3, Rejeitado = 4, Cancelado = 5
 }
 ```
 
 ### State Machine Rules
 ```
-Rascunho        → Pendente               (submit)
-Pendente        → DocumentacaoPendente    (docs pending)
-Pendente        → Aprovado                (approve, all docs ok)
-Pendente        → Rejeitado               (reject)
-Pendente        → Cancelado                (cancel)
-DocumentacaoPendente → Pendente           (docs completed)
-DocumentacaoPendente → Aprovado           (approve after docs)
-DocumentacaoPendente → Rejeitado          (reject)
-DocumentacaoPendente → Cancelado          (cancel)
+Rascunho              → Pendente               (submit)
+Pendente              → DocumentacaoPendente    (docs pending)
+Pendente              → Aprovado                (approve, all docs ok)
+Pendente              → Rejeitado               (reject)
+Pendente              → Cancelado               (cancel)
+DocumentacaoPendente  → Pendente                (docs completed)
+DocumentacaoPendente  → Aprovado                (approve after docs)
+DocumentacaoPendente  → Rejeitado               (reject)
+DocumentacaoPendente  → Cancelado               (cancel)
+Aprovado              → Cancelado               (Admin only, reverts Student.Status)
 ```
-
-Invalid transitions return `400 Bad Request` with error message.
+Invalid transitions return 400 with allowed states list.
 
 ## DTOs
-
 ```csharp
 public record CreateEnrollmentPeriodRequest(string Nome, DateTime DataInicio, DateTime DataFim, int AnoLetivo);
 public record EnrollmentPeriodDto(Guid Id, string Nome, DateTime DataInicio, DateTime DataFim, int AnoLetivo, bool IsActive);
@@ -89,30 +114,20 @@ public record RejectEnrollmentRequest(string Motivo);
 | `POST /enrollments/{id}/reject` | Admin, Staff |
 | `POST /enrollments/{id}/cancel` | Admin |
 
-## EnrollmentService
+## Error Handling
 
-- Validate state transitions before any status change.
-- On approve: set `ApprovedAt = DateTime.UtcNow`, set `Student.Status = Ativo`, update `Student.AnoLetivo`.
-- On reject: require `MotivoRejeicao` non-empty.
-- `SubmitAsync`: Rascunho → Pendente.
+| Condition | HTTP | Body |
+|---|---|---|
+| Invalid transition | 400 | `{"error":"invalid_transition","from":"X","to":"Y","allowed":["A","B"]}` |
+| Pending required docs | 400 | `{"error":"pending_required_documents","count":N}` |
+| Period closed | 400 | `{"error":"enrollment_period_closed"}` |
+| Out of window | 400 | `{"error":"enrollment_period_out_of_window"}` |
+| Duplicate enrollment | 409 | `{"error":"enrollment_already_exists"}` |
+| Overlapping periods | 400 | `{"error":"overlapping_periods"}` |
+| Student transferred | 400 | `{"error":"student_transferred"}` |
+| Cannot cancel approved | 400 | `{"error":"cannot_cancel_approved_enrollment"}` |
 
-## AppDbContext Updates
-
-```csharp
-public DbSet<EnrollmentPeriod> EnrollmentPeriods { get; set; }
-public DbSet<Enrollment> Enrollments { get; set; }
-
-builder.Entity<Enrollment>(e => {
-    e.HasIndex(en => en.TenantId);
-    e.HasIndex(en => en.StudentId);
-    e.HasIndex(en => new { en.TenantId, en.Status });
-});
-builder.Entity<EnrollmentPeriod>(e => {
-    e.HasIndex(ep => ep.TenantId);
-});
-```
-
-## File Locations
+## File / Module Layout
 
 | File | Path |
 |---|---|
@@ -122,3 +137,14 @@ builder.Entity<EnrollmentPeriod>(e => {
 | DTOs | `src/EduGestor.Api/Contracts/EnrollmentDtos.cs` |
 | IEnrollmentService + impl | `src/EduGestor.Infrastructure/Services/EnrollmentService.cs` |
 | EnrollmentController | `src/EduGestor.Api/Controllers/EnrollmentController.cs` |
+
+## Cross-Reference: Requirements → Design
+
+| Requirement | Covered By |
+|---|---|
+| FR-001-003: Period CRUD | EnrollmentPeriod, Controller |
+| FR-004-006: Enrollment CRUD | Enrollment entity, Controller |
+| FR-007-010: State transitions | State Machine, EnrollmentService |
+| FR-011/012: Entities | Domain Entities, AppDbContext |
+| FR-013: State machine | State Machine Rules, CanTransition method |
+| E1-E7: Edge cases | Error Handling table |

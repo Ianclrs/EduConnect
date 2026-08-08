@@ -1,45 +1,52 @@
 # Spec 90: Design — Parent Portal API
 
-## Design Philosophy
+## Design Approach
 
-The Parent Portal API is NOT a separate set of entities. It reuses existing entities (Student, Document, Enrollment, Notification) but provides a simplified parent-specific view with enforced access control: parents only see children linked via `StudentParent`.
+API do portal dos pais **não cria novas entidades** — reutiliza Student, Document, Enrollment, Notification das specs anteriores. A diferenciação está no controle de acesso: todo método valida o vínculo `StudentParent` ANTES de qualquer query.
+
+Padrão de segurança: `VerifyParentChildLinkAsync(parentId, studentId, tenantId)` → lança `ForbiddenException` se não vinculado.
+
+## Architecture Decisions
+
+- **AD-001: Reuso total de entidades** — sem novas tabelas. Apenas serviço (`ParentService`) e controller (`ParentController`).
+- **AD-002: ForbiddenException** — exception customizada mapeada para 403 via middleware global. Mensagem: "You are not linked to this student."
+
+## Data Flow: Dashboard
+
+```
+GET /parent/dashboard
+  → ParentService.GetDashboardAsync(parentId, tenantId)
+    → Query StudentParent WHERE ParentId = parentId → linked student IDs
+    → Query Students WHERE Id IN (linkedIds) → children
+    → Query Documents WHERE StudentId IN (linkedIds) AND Status = Pendente → pendingDocuments
+    → Query Enrollments WHERE StudentId IN (linkedIds) AND Status = Aprovado → activeEnrollments
+    → Query UserNotifications WHERE UserId = parentId AND IsRead = false → unreadNotifications
+    → Build ParentDashboardDto
+  → Return 200
+```
 
 ## ParentController
 
-All endpoints are under `/parent` and require `[Authorize(Roles = "Parent")]`.
+All endpoints under `/parent`, require `[Authorize(Roles = "Parent")]`.
 
 | Endpoint | Description |
 |---|---|
-| `GET /parent/dashboard` | Summary: children count, unread notifications, pending documents, active enrollments |
-| `GET /parent/children` | List of linked children (StudentDto) |
-| `GET /parent/children/{id}` | Child detail with documents, enrollment status, grades |
-| `GET /parent/children/{id}/documents` | Child's documents with status |
+| `GET /parent/dashboard` | Dashboard with aggregated summary |
+| `GET /parent/children` | List linked children |
+| `GET /parent/children/{id}` | Child detail (info + docs + enrollment + grades) |
+| `GET /parent/children/{id}/documents` | Child's documents |
 | `POST /parent/children/{id}/documents/upload` | Upload document for child |
-| `GET /parent/children/{id}/grades` | Child's grades/performance (placeholder) |
+| `GET /parent/children/{id}/grades` | Grades placeholder |
 
-## ParentDashboardDto
-
+## DTOs (EduGestor.Api/Contracts/ParentDtos.cs)
 ```csharp
-public record ParentDashboardDto(
-    int TotalChildren,
-    int UnreadNotifications,
-    int PendingDocuments,
-    int ActiveEnrollments,
-    List<ChildSummaryDto> Children
-);
-
-public record ChildSummaryDto(
-    Guid StudentId,
-    string Nome,
-    string Turma,
-    int AnoLetivo,
-    string EnrollmentStatus,
-    int PendingDocuments
-);
+public record ParentDashboardDto(int TotalChildren, int UnreadNotifications, int PendingDocuments, int ActiveEnrollments, List<ChildSummaryDto> Children);
+public record ChildSummaryDto(Guid StudentId, string Nome, string Turma, int AnoLetivo, string? EnrollmentStatus, int PendingDocuments);
+public record ChildDetailDto(StudentDto Student, List<DocumentDto> Documents, EnrollmentDto? CurrentEnrollment, List<GradeDto> Grades);
+public record GradeDto(string Disciplina, decimal? Nota, string? Observacoes); // placeholder
 ```
 
 ## ParentService (EduGestor.Infrastructure/Services/ParentService.cs)
-
 ```csharp
 public interface IParentService
 {
@@ -53,19 +60,26 @@ public interface IParentService
 ```
 
 ## Access Control Pattern
-
-Every method follows this pattern:
 ```csharp
-// 1. Verify parent-child link exists
-var link = await _db.StudentParents
-    .FirstOrDefaultAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
-if (link == null)
-    throw new ForbiddenException("You are not linked to this student.");
-
-// 2. Proceed with query filtered by studentId + tenantId
+private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId, Guid tenantId)
+{
+    var link = await _db.StudentParents
+        .FirstOrDefaultAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
+    if (link == null)
+        throw new ForbiddenException("You are not linked to this student.");
+}
 ```
 
-## File Locations
+## ForbiddenException (EduGestor.Api/Middleware/ForbiddenException.cs)
+```csharp
+public class ForbiddenException : Exception
+{
+    public ForbiddenException(string message) : base(message) { }
+}
+// Mapped to 403 in global exception middleware
+```
+
+## File / Module Layout
 
 | File | Path |
 |---|---|
@@ -73,3 +87,14 @@ if (link == null)
 | IParentService + impl | `src/EduGestor.Infrastructure/Services/ParentService.cs` |
 | ParentController | `src/EduGestor.Api/Controllers/ParentController.cs` |
 | ForbiddenException | `src/EduGestor.Api/Middleware/ForbiddenException.cs` |
+
+## Cross-Reference: Requirements → Design
+
+| Requirement | Covered By |
+|---|---|
+| FR-001: Dashboard | ParentService.GetDashboardAsync |
+| FR-002: List children | ParentService.GetChildrenAsync |
+| FR-003: Child detail | ParentService.GetChildDetailAsync |
+| FR-004/005: Documents | ParentService.GetChildDocumentsAsync/UploadDocumentAsync |
+| FR-006: Grades | ParentService.GetChildGradesAsync (placeholder) |
+| FR-007: Access control | VerifyParentChildLinkAsync, ForbiddenException |

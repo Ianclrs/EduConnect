@@ -6,21 +6,77 @@ references: V6
 
 # Spec 60: Re-enrollment System (Rematrícula)
 
-## What This Spec Delivers
+## Value Delivery
 
-Workflow de rematrícula para alunos já existentes. Permite renovação de matrícula para um novo ano letivo, reaproveitamento de documentos já validados, e identificação de documentos vencidos que precisam ser atualizados.
+Esta spec entrega **V6: Re-enrollment System** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **Renovação de matrícula para alunos existentes** em novo período/ano letivo.
+- **Reaproveitamento automático de documentos válidos** da matrícula anterior.
+- **Identificação de documentos vencidos** que precisam ser reenviados, gerando pendências no checklist.
+- **Workflow simplificado:** `pendente → documentacao_pendente → aprovado | rejeitado` (reutiliza entidade `Enrollment` da Spec 50).
 
-1. **AC1:** `POST /reenrollments` inicia rematrícula para aluno existente vinculado a novo período.
-2. **AC2:** `GET /reenrollments` lista rematrículas com status e data de criação.
-3. **AC3:** Sistema reaproveita automaticamente documentos válidos do ano anterior.
-4. **AC4:** Documentos vencidos geram pendências no checklist de rematrícula.
-5. **AC5:** `POST /reenrollments/{id}/approve` aprova rematrícula e atualiza ano letivo do aluno.
-6. **AC6:** Estados: `pendente → documentacao_pendente → aprovado | rejeitado`.
-7. **AC7:** `GET /students/{id}/enrollment-history` retorna histórico de matrículas/rematrículas do aluno.
+## Functional Requirements
+
+### FR-001: Iniciar Rematrícula
+- `POST /reenrollments` (Admin/Staff) recebe `{ studentId, enrollmentPeriodId }`, cria rematrícula com status=Pendente.
+- Valida: aluno existe e pertence ao tenant, aluno tem pelo menos 1 matrícula anterior aprovada, período ativo, aluno não tem rematrícula ativa no mesmo período.
+- Retorna 201 com `EnrollmentDto`.
+- Acceptance: Admin inicia rematrícula → 201. Aluno sem matrícula anterior → 400.
+
+### FR-002: Listar Rematrículas
+- `GET /reenrollments?status={status}&periodId={id}` (Admin/Staff) lista rematrículas com filtros.
+- Parent: vê apenas rematrículas dos filhos vinculados.
+- Acceptance: Admin lista todas. Parent vê só dos filhos.
+
+### FR-003: Detalhes da Rematrícula
+- `GET /reenrollments/{id}` retorna detalhes incluindo status de reaproveitamento de documentos (quais foram carregados, quais expiraram).
+- Parent: 403 se não vinculado.
+- Acceptance: Admin vê detalhes com status docs.
+
+### FR-004: Reaproveitamento de Documentos
+- Ao criar rematrícula, sistema automaticamente busca documentos do aluno com status=Aprovado.
+- Documentos com `DataValidade > DateTime.UtcNow` (ou sem validade) são carregados para a nova matrícula.
+- Documentos vencidos (`DataValidade <= UtcNow`) ou ausentes geram pendências: `DocumentacaoPendente`.
+- Tipos de documento obrigatórios (`DocumentType.IsRequired=true`) sem documento válido → pendência.
+- Acceptance: Aluno com docs válidos → status Pendente. Aluno com docs vencidos → DocumentacaoPendente.
+
+### FR-005: Aprovar Rematrícula
+- `POST /reenrollments/{id}/approve` (Admin/Staff): Pendente|DocumentacaoPendente → Aprovado.
+- Ao aprovar: `ApprovedAt = UtcNow`, `Student.AnoLetivo = Period.AnoLetivo`.
+- Docs obrigatórios pendentes → 400.
+- Acceptance: Aprova com docs ok → 200. Docs pendentes → 400.
+
+### FR-006: Rejeitar Rematrícula
+- `POST /reenrollments/{id}/reject` (Admin/Staff) com `{ motivo }` (10-500 chars).
+- Pendente|DocumentacaoPendente → Rejeitado (terminal).
+- Acceptance: Rejeita → 200.
+
+### FR-007: Histórico de Matrículas
+- `GET /students/{id}/enrollment-history` retorna todas as matrículas/rematrículas do aluno, ordenadas por ano letivo DESC.
+- Parent: 403 se não vinculado.
+- Acceptance: Admin vê histórico completo.
+
+## Non-Functional Requirements
+
+### NFR-001: Integridade
+- Reaproveitamento de documentos é atômico (mesma transação da criação da rematrícula).
+- Documento carregado mantém referência ao original (não duplica arquivo em disco).
+
+## Constraints
+
+- Depende de Spec 50 (Enrollment — reutiliza entidade Enrollment e EnrollmentPeriod).
+- Depende de Spec 70 (Documents — para validação de vencimento e reaproveitamento).
+- NÃO implementa workflow de rematrícula automática (trigger por data).
+
+## Edge Cases & Error States
+
+### E1: Aluno sem matrícula anterior → 400 `{ "error": "student_has_no_prior_enrollment" }`.
+### E2: Rematrícula duplicada no mesmo período → 409 `{ "error": "reenrollment_already_exists" }`.
+### E3: Período fechado → 400 `{ "error": "enrollment_period_closed" }`.
+### E4: Documentos vencidos → status DocumentacaoPendente com lista de tipos pendentes.
+### E5: Nenhum tipo de documento obrigatório configurado → status Pendente (sem pendências).
 
 ## Dependencies
 
-- Spec 50 (Enrollment) — compartilha entidades e lógica de períodos
-- Spec 70 (Documents) — para validação de documentos vencidos
+- Spec 50: Enrollment System (Enrollment entity, EnrollmentPeriod, máquina de estados)
+- Spec 70: Document Management (Document entity, DocumentType.IsRequired, validade)

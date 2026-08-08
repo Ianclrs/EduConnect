@@ -1,81 +1,98 @@
 # Spec 100: Tasks — Frontend Application (React + PWA)
 
-## Task Checklist
+## Tasks
 
-### T10.1: Scaffold Vite project
-- [ ] `npm create vite@latest frontend -- --template react-ts`
-- [ ] Install dependencies: react-router-dom, tailwindcss, @tailwindcss/vite, axios, react-hot-toast, lucide-react, vite-plugin-pwa
-- [ ] Configure Tailwind CSS 4 with Vite plugin
-- [ ] Configure TypeScript strict mode
+### T100.1: Scaffold Vite project
+- [ ] pending
+- **Action:** `npm create vite@latest frontend -- --template react-ts`. Install all dependencies. Configure Tailwind CSS 4, TypeScript strict.
+- **Verify:** `npm run build` exits 0.
 
-### T10.2: Create API client
-- [ ] Create `src/api/client.ts` with Axios instance + interceptors
-- [ ] Token stored in module-level variable (in-memory)
-- [ ] 401 interceptor: refresh token, retry
-- [ ] Create all API module files (auth, students, enrollments, documents, notifications, parent)
+### T100.2: Create API client + modules
+- [ ] pending
+- **Action:** Create `src/api/client.ts` (Axios + interceptors). Create `auth.ts`, `students.ts`, `enrollments.ts`, `documents.ts`, `notifications.ts`, `parent.ts`.
+- **Verify:** `npm run build` exits 0.
 
-### T10.3: Create Auth context
-- [ ] Create `src/context/AuthContext.tsx`
-- [ ] Login, logout, refresh, getCurrentUser
-- [ ] Persist auth state across page reloads (silent refresh via cookie)
+### T100.3: Create AuthContext + useAuth hook
+- [ ] pending
+- **Action:** Create `src/context/AuthContext.tsx` and `src/hooks/useAuth.ts`. Token in module-level variable. Silent refresh on page reload.
+- **Verify:** Auth state persists across page reloads.
 
-### T10.4: Create UI components
-- [ ] Button, Card, Input, Table, Modal, Badge, Pagination, Sidebar, Layout
-- [ ] All styled with Tailwind
+### T100.4: Create UI components
+- [ ] pending
+- **Action:** Create `Button`, `Card`, `Input`, `Table`, `Modal`, `Badge`, `Pagination`, `Sidebar`, `Layout`, `ProtectedRoute` in `src/components/`.
+- **Verify:** Components render in Storybook or basic test page.
 
-### T10.5: Create LoginPage
-- [ ] Email/password form
-- [ ] "Entrar com Google" button
-- [ ] Google OAuth callback handler
+### T100.5: Create LoginPage + Google callback
+- [ ] pending
+- **Action:** Create `src/pages/LoginPage.tsx` with email/password form + Google button. Handle Google callback.
+- **Verify:** Login flow works end-to-end.
 
-### T10.6: Create AdminLayout
-- [ ] Sidebar navigation: Dashboard, Alunos, Matrículas, Documentos, Notificações
-- [ ] Header with user info + logout
+### T100.6: Create AdminLayout + AdminDashboard
+- [ ] pending
+- **Action:** Layout with sidebar + header. Dashboard with 4 stat cards.
+- **Verify:** Admin login → dashboard renders.
 
-### T10.7: Create AdminDashboard
-- [ ] 4 stat cards fetching from API
+### T100.7: Create StudentList + StudentForm + StudentDetail
+- [ ] pending
+- **Action:** Table with search/filters/pagination. Create/Edit form. Detail with linked parents.
+- **Verify:** CRUD works end-to-end.
 
-### T10.8: Create StudentList + StudentForm + StudentDetail
-- [ ] Table with search + filters + pagination
-- [ ] Create/Edit modal or page
-- [ ] Detail page with linked parents
+### T100.8: Create EnrollmentList + EnrollmentDetail
+- [ ] pending
+- **Action:** Filter by period/status. Detail with document checklist. Approve/Reject buttons.
+- **Verify:** Enrollment workflow works.
 
-### T10.9: Create EnrollmentList + EnrollmentDetail
-- [ ] Filters by period + status
-- [ ] Detail with document checklist
-- [ ] Approve/Reject buttons
+### T100.9: Create DocumentVerification
+- [ ] pending
+- **Action:** Tabs Pending/All. Image preview, PDF download. Approve/Reject modal.
+- **Verify:** Document verification works.
 
-### T10.10: Create DocumentVerification
-- [ ] Tabs: Pending / All
-- [ ] Approve/Reject with reason
-- [ ] File preview for images
+### T100.10: Create NotificationCreate + NotificationList
+- [ ] pending
+- **Action:** Create form with broadcast/specific users. List sent notifications.
+- **Verify:** Notification creation works.
 
-### T10.11: Create NotificationCreate + NotificationList
-- [ ] Form: title, message, type, target
-- [ ] Broadcast or specific users
+### T100.11: Create ParentLayout + ParentDashboard
+- [ ] pending
+- **Action:** Children cards with summary data. Unread badge.
+- **Verify:** Parent login → dashboard shows linked children.
 
-### T10.12: Create ParentLayout + ParentDashboard
-- [ ] Children cards
-- [ ] Notification badge
+### T100.12: Create ChildDetail + ChildDocuments
+- [ ] pending
+- **Action:** Tabs: Info, Documents, Grades, History. Document upload button.
+- **Verify:** Child detail renders with documents. Upload works.
 
-### T10.13: Create ChildDetail + ChildDocuments
-- [ ] Tabs: Info, Documents, Grades, History
-- [ ] Document upload
+### T100.13: Create NotificationInbox
+- [ ] pending
+- **Action:** Read/unread list. Mark read. Mark all read button.
+- **Verify:** Inbox tracks read state.
 
-### T10.14: Create NotificationInbox
-- [ ] Read/unread list
-- [ ] Mark read, mark all read
+### T100.14: PWA configuration
+- [ ] pending
+- **Action:** Configure `vite-plugin-pwa`. Create `manifest.json`. Add icons 192x192 and 512x512. Offline page.
+- **Verify:** `npm run build` generates SW. Lighthouse PWA ≥ 90.
 
-### T10.15: PWA configuration
-- [ ] Configure vite-plugin-pwa
-- [ ] Create manifest.json
-- [ ] Add icons (192x192, 512x512)
-- [ ] Test offline caching
+### T100.15: Verify
+- [ ] pending
+- **Action:** `npm run build` — zero errors. `npm run preview` — test full app.
+- **Verify:** All ACs confirmed.
 
-### T10.16: Verify
-- [ ] `npm run build` — zero errors
-- [ ] Login flow works
-- [ ] Admin CRUD works
-- [ ] Parent portal shows linked children
-- [ ] PWA install prompt on mobile
-- [ ] Offline page shown when no connection
+## Task Dependency Order
+
+```
+T100.1 → T100.2 → T100.3 → T100.4 → T100.5 → T100.6 → T100.7/T100.8/T100.9/T100.10 → T100.11 → T100.12/T100.13 → T100.14 → T100.15
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001: Scaffold | T100.1 |
+| FR-002: Login | T100.5 |
+| FR-003: Axios Client | T100.2 |
+| FR-004: AuthContext | T100.3 |
+| FR-005: UI Components | T100.4 |
+| FR-006: AdminLayout | T100.6 |
+| FR-007-011: Admin pages | T100.7-T100.10 |
+| FR-012-014: Parent pages | T100.11-T100.13 |
+| FR-015: PWA | T100.14 |

@@ -6,20 +6,68 @@ references: V9
 
 # Spec 90: Parent Portal API
 
-## What This Spec Delivers
+## Value Delivery
 
-API específica para o portal dos pais. Dashboard com resumo dos filhos, visualização de desempenho/notas, inbox de notificações, upload de documentos pendentes, e acompanhamento de matrícula. Cada pai vê apenas dados dos filhos vinculados.
+Esta spec entrega **V9: Parent Portal API** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **Dashboard com resumo dos filhos:** Cards com nome, turma, status de matrícula, documentos pendentes, notificações não-lidas.
+- **Visualização detalhada por filho:** Dados, documentos, matrícula, notas (placeholder).
+- **Upload de documentos pendentes:** Pais podem fazer upload diretamente para os filhos vinculados.
+- **Acesso restrito:** Cada pai vê APENAS seus filhos vinculados via `StudentParent`. Bloqueio no serviço, não só no controller.
 
-1. **AC1:** `GET /parent/dashboard` retorna resumo: filhos vinculados, notificações não-lidas, documentos pendentes, status de matrícula.
-2. **AC2:** `GET /parent/children` lista filhos vinculados ao pai logado com dados básicos.
-3. **AC3:** `GET /parent/children/{id}` retorna detalhes completos do filho: dados, documentos, matrícula, notas.
-4. **AC4:** `GET /parent/children/{id}/documents` lista documentos do filho com status (pendente/aprovado/rejeitado).
-5. **AC5:** `POST /parent/children/{id}/documents/upload` upload de documento pendente.
-6. **AC6:** `GET /parent/children/{id}/grades` retorna notas/desempenho (placeholder estrutura).
-7. **AC7:** Todas as queries são automaticamente filtradas por TenantId + vínculo pai-filho.
-8. **AC8:** Pai não pode acessar dados de alunos que não são seus filhos.
+## Functional Requirements
+
+### FR-001: Dashboard do Pai
+- `GET /parent/dashboard` (Parent only) retorna `ParentDashboardDto` com: totalChildren, unreadNotifications, pendingDocuments, activeEnrollments, children[] (ChildSummaryDto).
+- ChildSummaryDto: studentId, nome, turma, anoLetivo, enrollmentStatus, pendingDocuments.
+- Acceptance: Pai logado vê resumo correto dos filhos vinculados.
+
+### FR-002: Listar Filhos
+- `GET /parent/children` retorna `List<StudentDto>` dos filhos vinculados ao pai logado.
+- Acceptance: Pai vê apenas filhos vinculados.
+
+### FR-003: Detalhes do Filho
+- `GET /parent/children/{id}` retorna `ChildDetailDto`: dados do aluno + lista de documentos + matrícula atual + notas (placeholder).
+- Valida vínculo pai-filho → 403 se não vinculado.
+- Acceptance: Pai vinculado vê detalhes completos. Não vinculado → 403.
+
+### FR-004: Documentos do Filho
+- `GET /parent/children/{id}/documents` retorna `List<DocumentDto>` com status.
+- Valida vínculo → 403 se não vinculado.
+- Acceptance: Pai vê documentos do filho.
+
+### FR-005: Upload de Documento
+- `POST /parent/children/{id}/documents/upload` (multipart) faz upload vinculado ao filho.
+- Valida vínculo → 403. Delega para `DocumentService.UploadAsync` da Spec 70.
+- Acceptance: Upload bem-sucedido → documento aparece para Admin.
+
+### FR-006: Notas do Filho
+- `GET /parent/children/{id}/grades` retorna `List<GradeDto>` (placeholder: estrutura vazia ou mock).
+- Valida vínculo → 403.
+- Acceptance: Endpoint existe (placeholder para implementação futura).
+
+### FR-007: Segurança — Toda query filtrada por TenantId + vínculo
+- Serviço `ParentService` valida `StudentParent` link ANTES de qualquer query.
+- Método auxiliar: `VerifyParentChildLinkAsync(parentId, studentId, tenantId)` → throws `ForbiddenException` se não vinculado.
+- Acceptance: Pai não vinculado nunca acessa dados. Teste automatizado confirma.
+
+## Non-Functional Requirements
+
+### NFR-001: Performance
+- Dashboard agrega dados de Students, Documents, Enrollments, Notifications → < 2s.
+
+## Constraints
+
+- Depende de Spec 10, 20, 30, 40, 70, 80.
+- Reutiliza entidades existentes (Student, Document, Enrollment, Notification).
+- NÃO cria novas entidades — apenas serviço e controller.
+
+## Edge Cases & Error States
+
+### E1: Pai acessa filho não vinculado → 403 `{ "error": "not_linked_to_student" }`.
+### E2: Pai sem filhos vinculados → dashboard retorna TotalChildren=0, listas vazias.
+### E3: Filho sem matrícula ativa → enrollmentStatus=null no ChildSummary.
+### E4: Upload excede limite → 400 (delegado para Spec 70).
 
 ## Dependencies
 

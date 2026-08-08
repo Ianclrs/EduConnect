@@ -1,28 +1,43 @@
 # Spec 90: Tasks — Parent Portal API
 
-## Task Checklist
+## Tasks
 
-### T9.1: Create Parent DTOs
-- [ ] Create `src/EduGestor.Api/Contracts/ParentDtos.cs`
-- [ ] ParentDashboardDto, ChildSummaryDto, ChildDetailDto, GradeDto
+### T90.1: Create Parent DTOs
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Contracts/ParentDtos.cs` with `ParentDashboardDto`, `ChildSummaryDto`, `ChildDetailDto`, `GradeDto`.
+- **Verify:** `dotnet build` exits 0.
 
-### T9.2: Create ParentService
-- [ ] Create `src/EduGestor.Infrastructure/Services/ParentService.cs`
-- [ ] GetDashboardAsync: aggregate children, notifications, documents, enrollments
-- [ ] GetChildrenAsync: query StudentParent join
-- [ ] GetChildDetailAsync: student + documents + enrollment + grades
-- [ ] UploadDocumentAsync: validate parent-child link, delegate to DocumentService
-- [ ] Every method: verify parent-child link first
+### T90.2: Create ForbiddenException
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Middleware/ForbiddenException.cs`. Wire in global exception middleware to map to 403.
+- **Verify:** `dotnet build` exits 0. Exception returns 403.
 
-### T9.3: Create ParentController
-- [ ] Create `src/EduGestor.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]`
-- [ ] All endpoints as defined in design
+### T90.3: Create ParentService
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Services/ParentService.cs`. All 6 methods with `VerifyParentChildLinkAsync` guard. Dashboard aggregates data from Students, Documents, Enrollments, Notifications.
+- **Verify:** Unit tests: parent sees only linked children, unlinked access throws ForbiddenException.
 
-### T9.4: Create ForbiddenException
-- [ ] Create `src/EduGestor.Api/Middleware/ForbiddenException.cs` with 403 mapping
+### T90.4: Create ParentController
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]` and all 6 endpoints.
+- **Verify:** Integration tests via `WebApplicationFactory`.
 
-### T9.5: Verify
-- [ ] Parent login → only sees linked children
-- [ ] Parent tries to access unlinked child → 403
-- [ ] Parent uploads document for child → appears in Admin document list
-- [ ] Dashboard shows correct counts
+### T90.5: Verify
+- [ ] pending
+- **Action:** `dotnet test` — all pass. `dotnet build` — zero errors.
+- **Verify:** Parent login → dashboard shows linked children. Unlinked child → 403. Upload → appears in admin list.
+
+## Task Dependency Order
+
+```
+T90.1 → T90.2 → T90.3 → T90.4 → T90.5
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001-003: Dashboard/Children/Detail | T90.3, T90.4 |
+| FR-004/005: Documents | T90.3, T90.4 |
+| FR-006: Grades | T90.3 (placeholder) |
+| FR-007: Access control | T90.2, T90.3 |

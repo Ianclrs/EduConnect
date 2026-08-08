@@ -1,37 +1,53 @@
 # Spec 80: Tasks — Notification System
 
-## Task Checklist
+## Tasks
 
-### T8.1: Create Notification entity
-- [ ] Create `src/EduGestor.Core/Entities/Notification.cs` implementing `ITenantScoped`
-- [ ] Properties: Id, TenantId, Titulo, Mensagem, Tipo, ReferenceId, CreatedAt
-- [ ] Create `NotificationType` enum
+### T80.1: Create Notification entity + NotificationType enum
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/Notification.cs` implementing `ITenantScoped`. Create `NotificationType` enum.
+- **Verify:** `dotnet build` exits 0.
 
-### T8.2: Create UserNotification entity
-- [ ] Create `src/EduGestor.Core/Entities/UserNotification.cs`
-- [ ] Properties: Id, NotificationId, UserId, IsRead, ReadAt
+### T80.2: Create UserNotification entity
+- [ ] pending
+- **Action:** Create `src/EduGestor.Core/Entities/UserNotification.cs`.
+- **Verify:** `dotnet build` exits 0.
 
-### T8.3: Create DTOs
-- [ ] Create `src/EduGestor.Api/Contracts/NotificationDtos.cs`
+### T80.3: Create DTOs
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Contracts/NotificationDtos.cs`.
+- **Verify:** `dotnet build` exits 0.
 
-### T8.4: Create NotificationService
-- [ ] CreateAsync: create Notification + UserNotification per userId
-- [ ] BroadcastAsync: to all parents in tenant
-- [ ] SendByStudentAsync: to parents of a specific student
-- [ ] GetForUserAsync: paginated, filtered by read status
-- [ ] MarkReadAsync, MarkAllReadAsync
-- [ ] GetUnreadCountAsync
+### T80.4: Create NotificationService
+- [ ] pending
+- **Action:** Create `src/EduGestor.Infrastructure/Services/NotificationService.cs`. All methods: CreateAsync, BroadcastAsync, SendByStudentAsync, GetForUserAsync, MarkReadAsync, MarkAllReadAsync, GetUnreadCountAsync.
+- **Verify:** Unit tests for all methods.
 
-### T8.5: Create NotificationController
-- [ ] All endpoints with proper auth
+### T80.5: Create NotificationController
+- [ ] pending
+- **Action:** Create `src/EduGestor.Api/Controllers/NotificationController.cs` with all endpoints.
+- **Verify:** Integration tests.
 
-### T8.6: Integrate with Document verification
-- [ ] On document reject: auto-create notification for student's parents
-- [ ] On document approve: no notification needed (positive signal)
+### T80.6: Integrate with Document verification
+- [ ] pending
+- **Action:** In `DocumentService.VerifyAsync`, on reject: call `INotificationService.SendByStudentAsync`. Add `INotificationService` dependency to `DocumentService`.
+- **Verify:** Reject document → notification appears for student's parents.
 
-### T8.7: Update AppDbContext
-- [ ] Add DbSets, indexes on UserId+IsRead
+### T80.7: Update AppDbContext + Migration
+- [ ] pending
+- **Action:** Add `DbSet<Notification>`, `DbSet<UserNotification>`. Index on (UserId, IsRead). Run migration.
+- **Verify:** `dotnet test` — all pass. `dotnet build` — zero errors.
 
-### T8.8: EF migration and verify
-- [ ] `dotnet ef migrations add AddNotifications`
-- [ ] Test create, broadcast, read tracking via Swagger
+## Task Dependency Order
+
+```
+T80.1/T80.2 → T80.3 → T80.4 → T80.5 → T80.6 → T80.7
+```
+
+## Cross-Reference: Requirements → Tasks
+
+| Requirement | Task(s) |
+|---|---|
+| FR-001-003: Create/Broadcast/ByStudent | T80.4, T80.5 |
+| FR-004-007: Read tracking | T80.4, T80.5 |
+| FR-008: Auto-notification | T80.6 |
+| FR-009/010: Entities | T80.1, T80.2 |

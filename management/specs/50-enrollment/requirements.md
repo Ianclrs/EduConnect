@@ -6,23 +6,125 @@ references: V5
 
 # Spec 50: Enrollment System (Matrícula)
 
-## What This Spec Delivers
+## Value Delivery
 
-Workflow completo de matrícula para novos alunos. Inclui criação de período de matrícula, checklist de documentos obrigatórios, inscrição de novos alunos, revisão e aprovação pela secretaria. Estados bem definidos com transições controladas.
+Esta spec entrega **V5: Enrollment System** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **Abertura de período de matrícula:** Admin define janelas com data início/fim e ano letivo.
+- **Inscrição de novos alunos:** Staff inicia matrícula vinculando aluno a período.
+- **Checklist de documentos obrigatórios:** Rastreamento de pendências por tipo de documento.
+- **Aprovação pela secretaria:** Admin/Staff aprovam/rejeitam com máquina de estados.
+- **Estados:** `rascunho → pendente → documentacao_pendente → aprovado | rejeitado | cancelado`.
 
-1. **AC1:** `POST /enrollment-periods` cria um período de matrícula (Admin only): DataInicio, DataFim, AnoLetivo.
-2. **AC2:** `GET /enrollment-periods` lista períodos de matrícula do tenant.
-3. **AC3:** `POST /enrollments` inicia matrícula: vincula aluno novo, período, e checklist de documentos.
-4. **AC4:** `GET /enrollments` lista matrículas com filtros: status, período, turma.
-5. **AC5:** `GET /enrollments/{id}` retorna matrícula com status dos documentos.
-6. **AC6:** `POST /enrollments/{id}/approve` aprova matrícula (Admin/Staff).
-7. **AC7:** `POST /enrollments/{id}/reject` rejeita com motivo.
-8. **AC8:** Estados: `rascunho → pendente → documentacao_pendente → aprovado | rejeitado | cancelado`.
-9. **AC9:** Transições de status são validadas (ex: não pode aprovar matrícula cancelada).
-10. **AC10:** Matrícula aprovada atualiza status do aluno para Ativo.
+## Functional Requirements
+
+### FR-001: Criar Período de Matrícula
+- `POST /enrollment-periods` (Admin) recebe `{ nome, dataInicio, dataFim, anoLetivo }`.
+- Valida: dataFim > dataInicio, anoLetivo >= ano atual, sem sobreposição com períodos ativos do mesmo tenant+ano.
+- Retorna 201 com `EnrollmentPeriodDto`.
+- Acceptance: Admin cria → 201. Datas inválidas → 400.
+
+### FR-002: Listar Períodos
+- `GET /enrollment-periods?includeInactive=false` (Admin/Staff) ordenado por ano letivo DESC.
+- Acceptance: Admin/Staff listam → 200. Parent → 403.
+
+### FR-003: Fechar Período
+- `PUT /enrollment-periods/{id}/close` (Admin) seta `IsActive = false`.
+- Já fechado → 200 (idempotente). Período fechado não aceita novas matrículas.
+- Acceptance: Fecha → 200. Nova matrícula → 400.
+
+### FR-004: Iniciar Matrícula
+- `POST /enrollments` (Admin/Staff) recebe `{ studentId, enrollmentPeriodId }`, cria com status=Rascunho.
+- Valida: aluno existe e pertence ao tenant, período ativo, aluno sem matrícula ativa no mesmo período, aluno não Inativo/Transferido.
+- Retorna 201 com `EnrollmentDto`.
+- Acceptance: Cria → 201. Aluno inativo → 400.
+
+### FR-005: Listar Matrículas
+- `GET /enrollments?status={status}&periodId={id}&page=1&pageSize=20` (Admin/Staff) com filtros.
+- Parent: vê apenas matrículas dos filhos vinculados.
+- Retorna `PagedResponse<EnrollmentDto>`.
+- Acceptance: Admin lista todas. Parent só dos filhos.
+
+### FR-006: Detalhes da Matrícula
+- `GET /enrollments/{id}` retorna matrícula com dados do aluno, período, checklist de documentos.
+- Parent: 403 se não vinculado ao aluno da matrícula.
+- Acceptance: Admin vê detalhes completos.
+
+### FR-007: Submeter Matrícula
+- `POST /enrollments/{id}/submit` (Admin/Staff): Rascunho → Pendente.
+- Se há documentos obrigatórios pendentes: → DocumentacaoPendente.
+- Transição inválida → 400 com estados permitidos.
+- Acceptance: Submete → 200. Transição inválida → 400.
+
+### FR-008: Aprovar Matrícula
+- `POST /enrollments/{id}/approve` (Admin/Staff): Pendente|DocumentacaoPendente → Aprovado.
+- Ao aprovar: ApprovedAt=UtcNow, Student.Status=Ativo, Student.AnoLetivo=Period.AnoLetivo.
+- Docs obrigatórios pendentes → 400 `{ "error": "pending_required_documents", "count": N }`.
+- Acceptance: Aprova com docs ok → 200. Docs pendentes → 400.
+
+### FR-009: Rejeitar Matrícula
+- `POST /enrollments/{id}/reject` (Admin/Staff) com `{ motivo }` (10-500 chars).
+- Pendente|DocumentacaoPendente → Rejeitado (terminal).
+- Acceptance: Rejeita → 200. Sem motivo → 400.
+
+### FR-010: Cancelar Matrícula
+- `POST /enrollments/{id}/cancel` (Admin): Pendente|DocumentacaoPendente → Cancelado (terminal).
+- Aprovado NÃO pode cancelar diretamente → 400.
+- Acceptance: Admin cancela pendente → 200. Cancelar aprovada → 400.
+
+### FR-011: Entidade EnrollmentPeriod
+- Implementa ITenantScoped: Id, TenantId, Nome (max 200), DataInicio, DataFim, AnoLetivo, IsActive, CreatedAt.
+- Índices: TenantId, (TenantId, AnoLetivo).
+- Acceptance: Migration cria tabela.
+
+### FR-012: Entidade Enrollment
+- Implementa ITenantScoped: Id, TenantId, StudentId (FK), EnrollmentPeriodId (FK), Status (enum), MotivoRejeicao (max 500, nullable), CreatedAt, ApprovedAt (nullable).
+- Enum EnrollmentStatus: Rascunho=0, Pendente=1, DocumentacaoPendente=2, Aprovado=3, Rejeitado=4, Cancelado=5.
+- Índices: TenantId, StudentId, (TenantId, Status).
+- Acceptance: Migration cria tabela.
+
+### FR-013: Máquina de Estados
+- Método `CanTransition(from, to): bool`. Transições inválidas → 400.
+- Tabela de transições válidas:
+  - Rascunho → Pendente
+  - Pendente → Aprovado | Rejeitado | Cancelado | DocumentacaoPendente
+  - DocumentacaoPendente → Pendente | Aprovado | Rejeitado | Cancelado
+  - Aprovado → Cancelado (Admin, reverte Student.Status)
+- Estados terminais (Rejeitado, Cancelado): sem transições.
+- Transições atômicas com side effects na mesma transação EF Core.
+- Acceptance: `dotnet test` cobre todos cenários.
+
+## Non-Functional Requirements
+
+### NFR-001: Integridade de Estados
+- Máquina de estados 100% server-side. Nenhum status alterado via update genérico.
+- Transações atômicas: status + side effects.
+
+### NFR-002: Performance
+- Listagem 10.000 matrículas com joins: < 1s.
+
+### NFR-003: Auditabilidade
+- Aprovada registra ApprovedAt. Rejeitada registra MotivoRejeicao.
+
+## Constraints
+
+- Depende de Spec 10, 20, 30, 40.
+- NÃO implementa integração com documentos (Spec 70 fará a integração).
+- NÃO implementa limite de vagas por turma.
+
+## Edge Cases & Error States
+
+### E1: Matrícula duplicada no mesmo período → 409 `{ "error": "enrollment_already_exists" }`.
+### E2: Período fechado → 400 `{ "error": "enrollment_period_closed" }`.
+### E3: Fora da janela → 400 `{ "error": "enrollment_period_out_of_window" }`.
+### E4: Cancelar aprovada → 400 `{ "error": "cannot_cancel_approved_enrollment" }`.
+### E5: Sobreposição de períodos → 400 `{ "error": "overlapping_periods" }`.
+### E6: Aluno transferido → 400 `{ "error": "student_transferred" }`.
+### E7: Nome do período vazio → 400 `{ "error": "period_name_required" }`.
 
 ## Dependencies
 
-- Spec 10, 2, 3, 4 (precisa de alunos, documentos)
+- Spec 10: Bootstrap
+- Spec 20: Multi-Tenant
+- Spec 30: Auth & Roles
+- Spec 40: Student Management

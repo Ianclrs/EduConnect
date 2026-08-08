@@ -6,23 +6,106 @@ references: V7
 
 # Spec 70: Document Management
 
-## What This Spec Delivers
+## Value Delivery
 
-Sistema de gestão de documentos dos alunos. Upload de arquivos, categorização por tipo (RG, CPF, comprovante, histórico, etc.), workflow de verificação pela secretaria, e tracking de validade/vencimento.
+Esta spec entrega **V7: Document Management** do `management/vision.md`. Especificamente:
 
-## Acceptance Criteria
+- **Upload de documentos** vinculados a alunos, com validação de formato e tamanho.
+- **Categorização por tipo:** RG, CPF, comprovante de residência, histórico escolar, etc. Tipos configuráveis por tenant.
+- **Workflow de verificação:** Secretaria aprova ou rejeita documentos com motivo.
+- **Tracking de validade/vencimento:** Documentos com data de validade, alertas de proximidade do vencimento.
+- **Armazenamento em disco local (dev).**
 
-1. **AC1:** `POST /documents/upload` faz upload de documento vinculado a aluno (multipart/form-data).
-2. **AC2:** `GET /students/{id}/documents` lista documentos do aluno com status e validade.
-3. **AC3:** `GET /documents/{id}/download` faz download do arquivo.
-4. **AC4:** `POST /documents/{id}/verify` aprova documento (Admin/Staff).
-5. **AC5:** `POST /documents/{id}/reject` rejeita documento com motivo.
-6. **AC6:** `GET /documents/pending` lista documentos pendentes de verificação (Admin/Staff).
-7. **AC7:** `GET /documents/expiring` lista documentos próximos do vencimento (30 dias).
-8. **AC8:** Tipos de documento são configuráveis por tenant: `POST /document-types`.
-9. **AC9:** Arquivos armazenados em disco local (dev) — caminho configurável.
-10. **AC10:** Documento tem campos: Tipo, AlunoId, NomeArquivo, CaminhoArquivo, Status (Pendente/Aprovado/Rejeitado), DataValidade, MotivoRejeicao.
+## Functional Requirements
+
+### FR-001: Upload de Documento
+- `POST /documents/upload` (multipart/form-data) recebe arquivo + `studentId` + `documentTypeId`.
+- Valida: arquivo max 10MB, extensões permitidas: pdf, jpg, jpeg, png. Aluno existe e pertence ao tenant.
+- Salva via `IFileStorage` no path `uploads/{tenantId}/{studentId}/{guid}_{filename}`.
+- Cria `Document` com status=Pendente. Retorna 201 com `DocumentDto`.
+- Parent: só faz upload para filhos vinculados.
+- Acceptance: Upload → 201. Arquivo > 10MB → 400. Extensão inválida → 400.
+
+### FR-002: Listar Documentos do Aluno
+- `GET /students/{id}/documents` retorna documentos com status e validade.
+- Parent: 403 se não vinculado.
+- Acceptance: Admin vê todos docs. Parent vê docs dos filhos.
+
+### FR-003: Download de Documento
+- `GET /documents/{id}/download` retorna arquivo com Content-Type apropriado.
+- Parent: 403 se não vinculado ao aluno do documento.
+- Acceptance: Download → 200 com arquivo.
+
+### FR-004: Verificar Documento (Aprovar)
+- `POST /documents/{id}/verify` (Admin/Staff) recebe `{ approved: true, motivoRejeicao: null }`.
+- Seta status=Aprovado, `VerifiedAt = UtcNow`. Se DocumentType tem `ValidadeMeses > 0`: calcula `DataValidade`.
+- Acceptance: Aprova → 200.
+
+### FR-005: Rejeitar Documento
+- `POST /documents/{id}/verify` com `{ approved: false, motivoRejeicao: "ilegível" }`.
+- Motivo obrigatório (10-500 chars). Seta status=Rejeitado.
+- Dispara notificação para pais do aluno (integração com Spec 80).
+- Acceptance: Rejeita → 200. Notificação criada.
+
+### FR-006: Listar Pendentes
+- `GET /documents/pending?page=1&pageSize=20` (Admin/Staff) lista docs com status=Pendente do tenant.
+- Acceptance: Admin vê lista de pendentes.
+
+### FR-007: Listar Próximos do Vencimento
+- `GET /documents/expiring?days=30` (Admin/Staff) lista docs aprovados com `DataValidade <= UtcNow.AddDays(days)`.
+- Acceptance: Docs vencendo em 30 dias aparecem.
+
+### FR-008: CRUD de Tipos de Documento
+- `POST /document-types` (Admin) cria tipo: `{ nome, descricao?, isRequired, validadeMeses }`.
+- `GET /document-types` (Admin/Staff) lista tipos do tenant.
+- `PUT /document-types/{id}` (Admin) atualiza.
+- `DELETE /document-types/{id}` (Admin) soft-delete (`IsActive = false`).
+- Acceptance: Admin gerencia tipos. Staff lista.
+
+### FR-009: Entidade DocumentType
+- Implementa `ITenantScoped`: Id, TenantId, Nome (max 200), Descricao (nullable), IsRequired (bool), ValidadeMeses (int, 0=não expira), IsActive (default true).
+- Acceptance: Migration cria tabela DocumentTypes.
+
+### FR-010: Entidade Document
+- Implementa `ITenantScoped`: Id, TenantId, StudentId (FK), DocumentTypeId (FK), NomeArquivo, CaminhoArquivo, Status (Pendente=0, Aprovado=1, Rejeitado=2), DataValidade (nullable), MotivoRejeicao (nullable, max 500), CreatedAt, VerifiedAt (nullable).
+- Índices: TenantId, StudentId, (TenantId, Status).
+- Acceptance: Migration cria tabela Documents.
+
+### FR-011: Armazenamento de Arquivos
+- `IFileStorage` interface: `SaveAsync(tenantId, studentId, fileName, stream) → path`, `GetAsync(path) → stream`, `DeleteAsync(path)`.
+- `LocalFileStorage`: salva em `{RootPath}/{tenantId}/{studentId}/{guid}_{filename}`. RootPath configurável em appsettings (`FileStorage:RootPath`).
+- Acceptance: Upload salva em disco. Download recupera.
+
+## Non-Functional Requirements
+
+### NFR-001: Segurança
+- Arquivos fora do web root (não acessíveis diretamente via URL).
+- Validação de tipo MIME além da extensão (magic bytes para pdf, jpg, png).
+- Path traversal prevention: filename sanitizado (só alfanumérico + underscore + ponto).
+
+### NFR-002: Performance
+- Upload 10MB em < 5s.
+- Download em < 2s para arquivos até 10MB.
+
+## Constraints
+
+- Depende de Spec 10, 20, 30, 40.
+- NÃO implementa storage cloud (S3) — apenas disco local (dev).
+- NÃO implementa scan de vírus.
+
+## Edge Cases & Error States
+
+### E1: Arquivo excede 10MB → 400 `{ "error": "file_too_large", "max_mb": 10 }`.
+### E2: Extensão não permitida → 400 `{ "error": "invalid_extension", "allowed": ["pdf","jpg","jpeg","png"] }`.
+### E3: Tipo de documento inativo → 400 `{ "error": "document_type_inactive" }`.
+### E4: Parent faz upload para filho não vinculado → 403.
+### E5: Documento já verificado → re-verificação permitida (atualiza status e motivo).
+### E6: ValidadeMeses = 0 → documento nunca expira (DataValidade = null).
+### E7: Deleção de tipo de documento com documentos existentes → soft-delete (mantém docs existentes, tipo fica IsActive=false).
 
 ## Dependencies
 
-- Spec 10, 2, 3, 4 (precisa de alunos)
+- Spec 10: Bootstrap
+- Spec 20: Multi-Tenant
+- Spec 30: Auth & Roles
+- Spec 40: Student Management
