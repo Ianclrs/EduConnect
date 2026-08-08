@@ -3,27 +3,27 @@
 ## Tasks
 
 ### T90.1: Create Parent DTOs
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Contracts/ParentDtos.cs` with `ParentDashboardDto`, `ChildSummaryDto`, `ChildDetailDto`, `GradeDto`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T90.2: Create ForbiddenException
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Middleware/ForbiddenException.cs`. Wire in global exception middleware to map to 403.
 - **Verify:** `dotnet build` exits 0. Exception returns 403.
 
 ### T90.3: Create ParentService
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Infrastructure/Services/ParentService.cs`. All 6 methods with `VerifyParentChildLinkAsync` guard. Dashboard aggregates data from Students, Documents, Enrollments, Notifications.
 - **Verify:** Unit tests: parent sees only linked children, unlinked access throws ForbiddenException.
 
 ### T90.4: Create ParentController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]` and all 6 endpoints.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T90.5: Verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet test` — all pass. `dotnet build` — zero errors.
 - **Verify:** Parent login → dashboard shows linked children. Unlinked child → 403. Upload → appears in admin list.
 

@@ -111,7 +111,13 @@ try
     // Notification services (Spec 80)
     builder.Services.AddScoped<INotificationService, NotificationService>();
 
+    // Parent Portal services (Spec 90)
+    builder.Services.AddScoped<IParentService, ParentService>();
+
     var app = builder.Build();
+
+    // Global exception handling (Spec 90)
+    app.UseMiddleware<ExceptionMiddleware>();
 
     // Middleware pipeline
     if (app.Environment.IsDevelopment())

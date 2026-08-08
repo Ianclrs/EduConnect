@@ -61,11 +61,11 @@ public interface IParentService
 
 ## Access Control Pattern
 ```csharp
-private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId)
+private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId, Guid tenantId)
 {
-    var linked = await _db.StudentParents
-        .AnyAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
-    if (!linked)
+    var link = await _db.StudentParents
+        .FirstOrDefaultAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
+    if (link == null)
         throw new ForbiddenException("You are not linked to this student.");
 }
 ```

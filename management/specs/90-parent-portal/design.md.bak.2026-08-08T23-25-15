@@ -54,18 +54,18 @@ public interface IParentService
     Task<List<StudentDto>> GetChildrenAsync(Guid parentId, Guid tenantId);
     Task<ChildDetailDto> GetChildDetailAsync(Guid parentId, Guid studentId, Guid tenantId);
     Task<List<DocumentDto>> GetChildDocumentsAsync(Guid parentId, Guid studentId, Guid tenantId);
-    Task<DocumentDto> UploadDocumentAsync(Guid parentId, Guid studentId, Stream fileStream, string fileName, string contentType, Guid documentTypeId, Guid tenantId);
+    Task<DocumentDto> UploadDocumentAsync(Guid parentId, Guid studentId, IFormFile file, Guid documentTypeId, Guid tenantId);
     Task<List<GradeDto>> GetChildGradesAsync(Guid parentId, Guid studentId, Guid tenantId);
 }
 ```
 
 ## Access Control Pattern
 ```csharp
-private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId)
+private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId, Guid tenantId)
 {
-    var linked = await _db.StudentParents
-        .AnyAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
-    if (!linked)
+    var link = await _db.StudentParents
+        .FirstOrDefaultAsync(sp => sp.StudentId == studentId && sp.ParentId == parentId);
+    if (link == null)
         throw new ForbiddenException("You are not linked to this student.");
 }
 ```
@@ -83,11 +83,10 @@ public class ForbiddenException : Exception
 
 | File | Path |
 |---|---|
-| Parent DTOs | `src/EduGestor.Infrastructure/Contracts/ParentDtos.cs` |
+| Parent DTOs | `src/EduGestor.Api/Contracts/ParentDtos.cs` |
 | IParentService + impl | `src/EduGestor.Infrastructure/Services/ParentService.cs` |
 | ParentController | `src/EduGestor.Api/Controllers/ParentController.cs` |
-| ForbiddenException | `src/EduGestor.Core/Exceptions/ForbiddenException.cs` |
-| ExceptionMiddleware | `src/EduGestor.Api/Middleware/ExceptionMiddleware.cs` |
+| ForbiddenException | `src/EduGestor.Api/Middleware/ForbiddenException.cs` |
 
 ## Cross-Reference: Requirements → Design
 

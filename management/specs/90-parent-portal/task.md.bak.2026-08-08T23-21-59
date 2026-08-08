@@ -18,12 +18,12 @@
 - **Verify:** Unit tests: parent sees only linked children, unlinked access throws ForbiddenException.
 
 ### T90.4: Create ParentController
-- [x] done
+- [ ] pending
 - **Action:** Create `src/EduGestor.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]` and all 6 endpoints.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T90.5: Verify
-- [x] done
+- [ ] pending
 - **Action:** `dotnet test` — all pass. `dotnet build` — zero errors.
 - **Verify:** Parent login → dashboard shows linked children. Unlinked child → 403. Upload → appears in admin list.
 
