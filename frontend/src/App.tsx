@@ -20,23 +20,22 @@ import ChildDocuments from './pages/parent/ChildDocuments';
 import NotificationInbox from './pages/parent/NotificationInbox';
 
 const adminItems = [
-  { label: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
-  { label: 'Alunos', path: '/admin/students', icon: <Users size={20} /> },
-  { label: 'Matrículas', path: '/admin/enrollments', icon: <GraduationCap size={20} /> },
-  { label: 'Documentos', path: '/admin/documents', icon: <FileText size={20} /> },
-  { label: 'Notificações', path: '/admin/notifications', icon: <Bell size={20} /> },
+  { label: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} />, color: 'violet' as const },
+  { label: 'Alunos', path: '/admin/students', icon: <Users size={20} />, color: 'blue' as const },
+  { label: 'Matrículas', path: '/admin/enrollments', icon: <GraduationCap size={20} />, color: 'green' as const },
+  { label: 'Documentos', path: '/admin/documents', icon: <FileText size={20} />, color: 'amber' as const },
+  { label: 'Notificações', path: '/admin/notifications', icon: <Bell size={20} />, color: 'red' as const },
 ];
 
 const parentItems = [
-  { label: 'Dashboard', path: '/parent', icon: <LayoutDashboard size={20} /> },
-  { label: 'Notificações', path: '/parent/notifications', icon: <Bell size={20} /> },
+  { label: 'Dashboard', path: '/parent', icon: <LayoutDashboard size={20} />, color: 'violet' as const },
+  { label: 'Notificações', path: '/parent/notifications', icon: <Bell size={20} />, color: 'red' as const },
 ];
 
 function AdminLayout() {
   return (
     <Sidebar items={adminItems} title="EduGestor Admin">
-      <div className="p-6">
-        <Routes>
+      <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<StudentList />} />
           <Route path="students/new" element={<StudentForm />} />
@@ -48,7 +47,6 @@ function AdminLayout() {
           <Route path="notifications" element={<NotificationList />} />
           <Route path="notifications/create" element={<NotificationCreate />} />
         </Routes>
-      </div>
     </Sidebar>
   );
 }
@@ -56,14 +54,12 @@ function AdminLayout() {
 function ParentLayout() {
   return (
     <Sidebar items={parentItems} title="EduGestor">
-      <div className="p-6">
         <Routes>
           <Route index element={<ParentDashboard />} />
           <Route path="children/:id" element={<ChildDetail />} />
           <Route path="children/:id/documents" element={<ChildDocuments />} />
           <Route path="notifications" element={<NotificationInbox />} />
         </Routes>
-      </div>
     </Sidebar>
   );
 }

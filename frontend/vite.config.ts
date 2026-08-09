@@ -4,6 +4,16 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/auth': 'http://localhost:5264',
+      '/students': 'http://localhost:5264',
+      '/enrollments': 'http://localhost:5264',
+      '/documents': 'http://localhost:5264',
+      '/notifications': 'http://localhost:5264',
+      '/parent': 'http://localhost:5264',
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { getAccessToken, setAccessToken } from '../api/client';
 import * as authApi from '../api/auth';
 import type { User } from '../types';
@@ -24,8 +24,11 @@ export const AuthContext = createContext<AuthState>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     const init = async () => {
       const token = getAccessToken();
       if (token) {
@@ -33,6 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const me = await authApi.getMe();
           setUser(me);
         } catch { setAccessToken(null); }
+      } else {
+        // Tenta restaurar a sessão via refresh token (cookie httpOnly)
+        try {
+          const newToken = await authApi.refreshToken();
+          setAccessToken(newToken.accessToken);
+          const me = await authApi.getMe();
+          setUser(me);
+        } catch { /* sem sessão válida */ }
       }
       setIsLoading(false);
     };

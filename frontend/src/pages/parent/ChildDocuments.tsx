@@ -41,7 +41,7 @@ export default function ChildDocuments() {
       <Link to={`/parent/children/${id}`} className="flex items-center gap-1 text-sm text-gray-500 mb-4"><ArrowLeft size={16} /> Voltar</Link>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Documentos</h2>
       <Card className="mb-6">
-        <form onSubmit={handleUpload} className="flex gap-4 items-end">
+        <form onSubmit={handleUpload} className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
           <input type="file" ref={fileRef} className="text-sm" accept=".pdf,.jpg,.jpeg,.png" required />
           <Button type="submit" disabled={uploading}><Upload size={14} className="mr-1" />{uploading ? 'Enviando...' : 'Upload'}</Button>
         </form>

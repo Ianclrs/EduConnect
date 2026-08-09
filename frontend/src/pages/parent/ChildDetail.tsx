@@ -20,7 +20,7 @@ export default function ChildDetail() {
       <Link to="/parent" className="flex items-center gap-1 text-sm text-gray-500 mb-4"><ArrowLeft size={16} /> Voltar</Link>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">{child.student.nome}</h2>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {(['info', 'docs', 'grades'] as const).map((t) => (
           <Button key={t} variant={tab === t ? 'primary' : 'secondary'} size="sm" onClick={() => setTab(t)}>
             {t === 'info' ? 'Informações' : t === 'docs' ? 'Documentos' : 'Notas'}

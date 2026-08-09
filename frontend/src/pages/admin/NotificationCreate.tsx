@@ -53,7 +53,7 @@ export default function NotificationCreate() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Destino</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {(['users', 'broadcast', 'student'] as TargetMode[]).map((m) => (
                 <Button key={m} variant={mode === m ? 'primary' : 'secondary'} size="sm" type="button" onClick={() => setMode(m)}>
                   {m === 'users' ? 'Usuários' : m === 'broadcast' ? 'Broadcast' : 'Por Aluno'}

@@ -14,7 +14,7 @@ interface TableProps<T> {
 }
 
 export function Table<T>({ columns, data, keyExtractor, emptyMessage = 'Nenhum resultado encontrado.' }: TableProps<T>) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return <p className="text-gray-500 text-center py-4">{emptyMessage}</p>;
   }
 
