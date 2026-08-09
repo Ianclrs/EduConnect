@@ -28,7 +28,7 @@
 | 70 | Document Management | audited | V7 |
 | 80 | Notification System | audited | V8 |
 | 90 | Parent Portal API | audited | V9 |
-| 100 | Frontend Application (React + PWA) | verified | V10 |
+| 100 | Frontend Application (React + PWA) | audited | V10 |
 
 ---
 

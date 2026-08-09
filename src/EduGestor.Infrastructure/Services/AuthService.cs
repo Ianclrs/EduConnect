@@ -204,7 +204,7 @@ public class AuthService : IAuthService
         return new AuthResponse(
             AccessToken: accessToken,
             RefreshToken: refreshToken.Token,
-            User: new UserDto(user.Id, user.Email ?? string.Empty, user.Name, user.Role.ToString()));
+            User: new UserDto(user.Id, user.Email ?? string.Empty, user.Name, user.Role.ToString(), user.TenantId));
     }
 }
 

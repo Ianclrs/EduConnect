@@ -1,8 +1,10 @@
 using System.Text.Json;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using EduGestor.Core.Entities;
 using EduGestor.Infrastructure.Contracts;
 using EduGestor.Infrastructure.Data;
 using EduGestor.Infrastructure.Services;
@@ -88,6 +90,32 @@ public class AuthController : ControllerBase
         await _authService.RevokeTokenAsync(refreshToken);
         Response.Cookies.Delete("refresh_token");
         return Ok();
+    }
+
+    /// <summary>Get current authenticated user info.</summary>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMe()
+    {
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            return Unauthorized();
+
+        var user = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+            return Unauthorized();
+
+        return Ok(new
+        {
+            user.Id,
+            user.Name,
+            user.Email,
+            role = user.Role.ToString(),
+            user.TenantId,
+        });
     }
 
     /// <summary>FR-005: Redirect to Google OAuth consent screen.</summary>

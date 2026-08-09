@@ -8,72 +8,72 @@
 - **Verify:** `npm run build` exits 0.
 
 ### T100.2: Create API client + modules
-- [x] done
+- [ ] pending
 - **Action:** Create `src/api/client.ts` (Axios + interceptors). Create `auth.ts`, `students.ts`, `enrollments.ts`, `documents.ts`, `notifications.ts`, `parent.ts`.
 - **Verify:** `npm run build` exits 0.
 
 ### T100.3: Create AuthContext + useAuth hook
-- [x] done
+- [ ] pending
 - **Action:** Create `src/context/AuthContext.tsx` and `src/hooks/useAuth.ts`. Token in module-level variable. Silent refresh on page reload.
 - **Verify:** Auth state persists across page reloads.
 
 ### T100.4: Create UI components
-- [x] done
+- [ ] pending
 - **Action:** Create `Button`, `Card`, `Input`, `Table`, `Modal`, `Badge`, `Pagination`, `Sidebar`, `Layout`, `ProtectedRoute` in `src/components/`.
 - **Verify:** Components render in Storybook or basic test page.
 
 ### T100.5: Create LoginPage + Google callback
-- [x] done
+- [ ] pending
 - **Action:** Create `src/pages/LoginPage.tsx` with email/password form + Google button. Handle Google callback.
 - **Verify:** Login flow works end-to-end.
 
 ### T100.6: Create AdminLayout + AdminDashboard
-- [x] done
+- [ ] pending
 - **Action:** Layout with sidebar + header. Dashboard with 4 stat cards.
 - **Verify:** Admin login → dashboard renders.
 
 ### T100.7: Create StudentList + StudentForm + StudentDetail
-- [x] done
+- [ ] pending
 - **Action:** Table with search/filters/pagination. Create/Edit form. Detail with linked parents.
 - **Verify:** CRUD works end-to-end.
 
 ### T100.8: Create EnrollmentList + EnrollmentDetail
-- [x] done
+- [ ] pending
 - **Action:** Filter by period/status. Detail with document checklist. Approve/Reject buttons.
 - **Verify:** Enrollment workflow works.
 
 ### T100.9: Create DocumentVerification
-- [x] done
+- [ ] pending
 - **Action:** Tabs Pending/All. Image preview, PDF download. Approve/Reject modal.
 - **Verify:** Document verification works.
 
 ### T100.10: Create NotificationCreate + NotificationList
-- [x] done
+- [ ] pending
 - **Action:** Create form with broadcast/specific users. List sent notifications.
 - **Verify:** Notification creation works.
 
 ### T100.11: Create ParentLayout + ParentDashboard
-- [x] done
+- [ ] pending
 - **Action:** Children cards with summary data. Unread badge.
 - **Verify:** Parent login → dashboard shows linked children.
 
 ### T100.12: Create ChildDetail + ChildDocuments
-- [x] done
+- [ ] pending
 - **Action:** Tabs: Info, Documents, Grades, History. Document upload button.
 - **Verify:** Child detail renders with documents. Upload works.
 
 ### T100.13: Create NotificationInbox
-- [x] done
+- [ ] pending
 - **Action:** Read/unread list. Mark read. Mark all read button.
 - **Verify:** Inbox tracks read state.
 
 ### T100.14: PWA configuration
-- [x] done
+- [ ] pending
 - **Action:** Configure `vite-plugin-pwa`. Create `manifest.json`. Add icons 192x192 and 512x512. Offline page.
 - **Verify:** `npm run build` generates SW. Lighthouse PWA ≥ 90.
 
 ### T100.15: Verify
-- [x] done
+- [ ] pending
 - **Action:** `npm run build` — zero errors. `npm run preview` — test full app.
 - **Verify:** All ACs confirmed.
 
