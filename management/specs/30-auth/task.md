@@ -9,12 +9,12 @@
 
 ### T30.2: Create User entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/User.cs` implementing `ITenantScoped`. Create `src/EduGestor.Core/Entities/UserRole.cs` enum.
-- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
+- **Action:** Create `src/Ciclo.Core/Entities/User.cs` implementing `ITenantScoped`. Create `src/Ciclo.Core/Entities/UserRole.cs` enum.
+- **Verify:** `dotnet build src/Ciclo.Core` exits 0.
 
 ### T30.3: Create RefreshToken entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/RefreshToken.cs` with computed properties.
+- **Action:** Create `src/Ciclo.Core/Entities/RefreshToken.cs` with computed properties.
 - **Verify:** `dotnet build` exits 0.
 
 ### T30.4: Update AppDbContext for Identity
@@ -24,22 +24,22 @@
 
 ### T30.5: Create Auth DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/AuthDtos.cs` with all records.
+- **Action:** Create `src/Ciclo.Api/Contracts/AuthDtos.cs` with all records.
 - **Verify:** `dotnet build` exits 0.
 
 ### T30.6: Create JwtTokenGenerator
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs`. Access token: HMAC-SHA256, 15min, claims sub/email/tenant_id/role/name. Refresh: 64-byte random, 7-day.
+- **Action:** Create `src/Ciclo.Infrastructure/Auth/JwtTokenGenerator.cs`. Access token: HMAC-SHA256, 15min, claims sub/email/tenant_id/role/name. Refresh: 64-byte random, 7-day.
 - **Verify:** Unit test: `GenerateAccessToken` returns valid JWT with all 5 claims.
 
 ### T30.7: Create AuthService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/AuthService.cs` with all 6 methods. BCrypt via Identity. Refresh rotation.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/AuthService.cs` with all 6 methods. BCrypt via Identity. Refresh rotation.
 - **Verify:** Unit tests for register, login, refresh, revoke, forgot-password, reset-password.
 
 ### T30.8: Create AuthController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/AuthController.cs` with all 8 endpoints.
+- **Action:** Create `src/Ciclo.Api/Controllers/AuthController.cs` with all 8 endpoints.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T30.9: Add Google OAuth

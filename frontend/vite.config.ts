@@ -20,8 +20,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'EduGestor',
-        short_name: 'EduGestor',
+        name: 'Ciclo',
+        short_name: 'Ciclo',
         theme_color: '#4f46e5',
         background_color: '#f9fafb',
         display: 'standalone',

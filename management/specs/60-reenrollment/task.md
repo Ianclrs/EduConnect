@@ -4,17 +4,17 @@
 
 ### T60.1: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/ReenrollmentDtos.cs` with `CreateReenrollmentRequest`, `ReenrollmentDetailDto`.
+- **Action:** Create `src/Ciclo.Api/Contracts/ReenrollmentDtos.cs` with `CreateReenrollmentRequest`, `ReenrollmentDetailDto`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T60.2: Create ReenrollmentService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/ReenrollmentService.cs`. Implement CreateAsync (eligibility + carry-forward), GetAllAsync, GetByIdAsync, ApproveAsync, RejectAsync.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/ReenrollmentService.cs`. Implement CreateAsync (eligibility + carry-forward), GetAllAsync, GetByIdAsync, ApproveAsync, RejectAsync.
 - **Verify:** Unit tests for eligibility validation, document carry-forward, expired doc flagging.
 
 ### T60.3: Create ReenrollmentController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/ReenrollmentController.cs` with all 5 endpoints. Auth: Admin/Staff.
+- **Action:** Create `src/Ciclo.Api/Controllers/ReenrollmentController.cs` with all 5 endpoints. Auth: Admin/Staff.
 - **Verify:** Integration tests.
 
 ### T60.4: Add enrollment history endpoint

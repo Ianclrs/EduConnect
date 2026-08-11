@@ -35,14 +35,14 @@ The approach is **infrastructure-only** — it does not touch business logic or 
 
 | Component | Responsibility | File | Depends On |
 |---|---|---|---|
-| `Tenant` | Domain entity representing a school/college | `src/EduGestor.Core/Entities/Tenant.cs` | Nothing |
-| `ITenantScoped` | Marker interface for tenant-owned entities | `src/EduGestor.Core/Interfaces/ITenantScoped.cs` | Nothing |
-| `ITenantContext` | Scoped accessor for current tenant ID | `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs` | Nothing |
-| `TenantContext` | Concrete scoped implementation | `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs` | `ITenantContext` |
-| `TenantNotResolvedException` | Exception for unresolved tenant access | `src/EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs` | `InvalidOperationException` |
-| `TenantMiddleware` | ASP.NET Core middleware extracting tenant from JWT | `src/EduGestor.Api/Middleware/TenantMiddleware.cs` | `TenantContext`, `HttpContext` |
-| `AppDbContext` (updated) | DbContext with global query filters | `src/EduGestor.Infrastructure/Data/AppDbContext.cs` | `ITenantContext`, `ITenantScoped` |
-| `TenantSeeder` | Seeds default tenant on first run | `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs` | `AppDbContext`, `IHostEnvironment` |
+| `Tenant` | Domain entity representing a school/college | `src/Ciclo.Core/Entities/Tenant.cs` | Nothing |
+| `ITenantScoped` | Marker interface for tenant-owned entities | `src/Ciclo.Core/Interfaces/ITenantScoped.cs` | Nothing |
+| `ITenantContext` | Scoped accessor for current tenant ID | `src/Ciclo.Infrastructure/Tenancy/TenantContext.cs` | Nothing |
+| `TenantContext` | Concrete scoped implementation | `src/Ciclo.Infrastructure/Tenancy/TenantContext.cs` | `ITenantContext` |
+| `TenantNotResolvedException` | Exception for unresolved tenant access | `src/Ciclo.Infrastructure/Tenancy/TenantNotResolvedException.cs` | `InvalidOperationException` |
+| `TenantMiddleware` | ASP.NET Core middleware extracting tenant from JWT | `src/Ciclo.Api/Middleware/TenantMiddleware.cs` | `TenantContext`, `HttpContext` |
+| `AppDbContext` (updated) | DbContext with global query filters | `src/Ciclo.Infrastructure/Data/AppDbContext.cs` | `ITenantContext`, `ITenantScoped` |
+| `TenantSeeder` | Seeds default tenant on first run | `src/Ciclo.Infrastructure/Data/Seeders/TenantSeeder.cs` | `AppDbContext`, `IHostEnvironment` |
 
 ## Data Flow
 
@@ -127,9 +127,9 @@ Program.cs                           TenantSeeder.SeedAsync()
 
 ## Domain Entities
 
-### Tenant (EduGestor.Core/Entities/Tenant.cs)
+### Tenant (Ciclo.Core/Entities/Tenant.cs)
 ```csharp
-namespace EduGestor.Core.Entities;
+namespace Ciclo.Core.Entities;
 
 public class Tenant
 {
@@ -141,9 +141,9 @@ public class Tenant
 }
 ```
 
-### ITenantScoped (EduGestor.Core/Interfaces/ITenantScoped.cs)
+### ITenantScoped (Ciclo.Core/Interfaces/ITenantScoped.cs)
 ```csharp
-namespace EduGestor.Core.Interfaces;
+namespace Ciclo.Core.Interfaces;
 
 /// <summary>
 /// Marker interface for entities whose data is scoped to a specific tenant.
@@ -160,9 +160,9 @@ All entities that belong to a tenant (Student, Enrollment, Document, Notificatio
 
 ## Infrastructure
 
-### ITenantContext + TenantContext (EduGestor.Infrastructure/Tenancy/TenantContext.cs)
+### ITenantContext + TenantContext (Ciclo.Infrastructure/Tenancy/TenantContext.cs)
 ```csharp
-namespace EduGestor.Infrastructure.Tenancy;
+namespace Ciclo.Infrastructure.Tenancy;
 
 public interface ITenantContext
 {
@@ -185,9 +185,9 @@ public class TenantContext : ITenantContext
 
 Registered as **Scoped** in DI.
 
-### TenantNotResolvedException (EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs)
+### TenantNotResolvedException (Ciclo.Infrastructure/Tenancy/TenantNotResolvedException.cs)
 ```csharp
-namespace EduGestor.Infrastructure.Tenancy;
+namespace Ciclo.Infrastructure.Tenancy;
 
 public class TenantNotResolvedException : InvalidOperationException
 {
@@ -199,9 +199,9 @@ public class TenantNotResolvedException : InvalidOperationException
 }
 ```
 
-### TenantMiddleware (EduGestor.Api/Middleware/TenantMiddleware.cs)
+### TenantMiddleware (Ciclo.Api/Middleware/TenantMiddleware.cs)
 ```csharp
-namespace EduGestor.Api.Middleware;
+namespace Ciclo.Api.Middleware;
 
 public class TenantMiddleware
 {
@@ -256,7 +256,7 @@ public class TenantMiddleware
 | `ITenantContext.TenantId` accessed before resolution | N/A (throws) | `TenantNotResolvedException` | Programming error |
 | Seeder runs in Production | N/A (skips) | N/A | `IWebHostEnvironment.IsDevelopment()` is false |
 
-### AppDbContext Changes (EduGestor.Infrastructure/Data/AppDbContext.cs)
+### AppDbContext Changes (Ciclo.Infrastructure/Data/AppDbContext.cs)
 
 Constructor: Add `ITenantContext tenantContext` parameter, store as `_tenantContext`.
 
@@ -338,9 +338,9 @@ public class AppDbContext : DbContext
 
 ## Data Seeding
 
-### TenantSeeder (EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs)
+### TenantSeeder (Ciclo.Infrastructure/Data/Seeders/TenantSeeder.cs)
 ```csharp
-namespace EduGestor.Infrastructure.Data.Seeders;
+namespace Ciclo.Infrastructure.Data.Seeders;
 
 public static class TenantSeeder
 {
@@ -384,13 +384,13 @@ public static class TenantSeeder
 
 | File | Path | Purpose |
 |---|---|---|
-| Tenant entity | `src/EduGestor.Core/Entities/Tenant.cs` | Domain entity: school/college |
-| ITenantScoped | `src/EduGestor.Core/Interfaces/ITenantScoped.cs` | Marker interface for tenant-scoped entities |
-| ITenantContext + TenantContext | `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs` | Scoped service holding current tenant ID |
-| TenantNotResolvedException | `src/EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs` | Exception for unresolved tenant access |
-| TenantMiddleware | `src/EduGestor.Api/Middleware/TenantMiddleware.cs` | ASP.NET Core middleware: JWT claim → tenant context |
-| TenantSeeder | `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs` | Seeds default tenant on first dev run |
-| AppDbContext (updated) | `src/EduGestor.Infrastructure/Data/AppDbContext.cs` | Add DbSet<Tenant>, global query filters, auto-set TenantId on SaveChanges |
+| Tenant entity | `src/Ciclo.Core/Entities/Tenant.cs` | Domain entity: school/college |
+| ITenantScoped | `src/Ciclo.Core/Interfaces/ITenantScoped.cs` | Marker interface for tenant-scoped entities |
+| ITenantContext + TenantContext | `src/Ciclo.Infrastructure/Tenancy/TenantContext.cs` | Scoped service holding current tenant ID |
+| TenantNotResolvedException | `src/Ciclo.Infrastructure/Tenancy/TenantNotResolvedException.cs` | Exception for unresolved tenant access |
+| TenantMiddleware | `src/Ciclo.Api/Middleware/TenantMiddleware.cs` | ASP.NET Core middleware: JWT claim → tenant context |
+| TenantSeeder | `src/Ciclo.Infrastructure/Data/Seeders/TenantSeeder.cs` | Seeds default tenant on first dev run |
+| AppDbContext (updated) | `src/Ciclo.Infrastructure/Data/AppDbContext.cs` | Add DbSet<Tenant>, global query filters, auto-set TenantId on SaveChanges |
 
 ### Registration in Program.cs
 

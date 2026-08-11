@@ -70,7 +70,7 @@ export default function LoginPage() {
         <div className="h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-emerald-500 animate-gradient" />
         <div className="p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-stone-800 tracking-tight">EduGestor</h1>
+            <h1 className="text-2xl font-bold text-stone-800 tracking-tight">Ciclo</h1>
             <p className="text-stone-500 mt-1 text-sm">Sistema de Gestão Escolar</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">

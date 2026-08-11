@@ -27,7 +27,7 @@ GET /students?search=João&turma=A&page=1
 
 ## Domain Entities
 
-### Student (EduGestor.Core/Entities/Student.cs)
+### Student (Ciclo.Core/Entities/Student.cs)
 ```csharp
 public class Student : ITenantScoped
 {
@@ -50,7 +50,7 @@ public class Student : ITenantScoped
 public enum StudentStatus { Ativo = 0, Inativo = 1, Transferido = 2 }
 ```
 
-### StudentParent (EduGestor.Core/Entities/StudentParent.cs)
+### StudentParent (Ciclo.Core/Entities/StudentParent.cs)
 ```csharp
 public class StudentParent
 {
@@ -61,7 +61,7 @@ public class StudentParent
 }
 ```
 
-## DTOs (EduGestor.Api/Contracts/StudentDtos.cs)
+## DTOs (Ciclo.Api/Contracts/StudentDtos.cs)
 ```csharp
 public record StudentDto(Guid Id, string Nome, DateTime DataNascimento, string? Cpf, string Turma, int AnoLetivo, string Status, string? Observacoes, DateTime CreatedAt, List<ParentLinkDto> Parents);
 public record CreateStudentRequest(string Nome, DateTime DataNascimento, string? Cpf, string Turma, int AnoLetivo, string? Observacoes);
@@ -113,12 +113,12 @@ builder.Entity<StudentParent>(e => {
 
 | File | Path |
 |---|---|
-| Student entity | `src/EduGestor.Core/Entities/Student.cs` |
-| StudentParent entity | `src/EduGestor.Core/Entities/StudentParent.cs` |
-| StudentStatus enum | `src/EduGestor.Core/Entities/StudentStatus.cs` |
-| Student DTOs | `src/EduGestor.Api/Contracts/StudentDtos.cs` |
-| IStudentService + impl | `src/EduGestor.Infrastructure/Services/StudentService.cs` |
-| StudentController | `src/EduGestor.Api/Controllers/StudentController.cs` |
+| Student entity | `src/Ciclo.Core/Entities/Student.cs` |
+| StudentParent entity | `src/Ciclo.Core/Entities/StudentParent.cs` |
+| StudentStatus enum | `src/Ciclo.Core/Entities/StudentStatus.cs` |
+| Student DTOs | `src/Ciclo.Api/Contracts/StudentDtos.cs` |
+| IStudentService + impl | `src/Ciclo.Infrastructure/Services/StudentService.cs` |
+| StudentController | `src/Ciclo.Api/Controllers/StudentController.cs` |
 
 ## Cross-Reference: Requirements → Design
 

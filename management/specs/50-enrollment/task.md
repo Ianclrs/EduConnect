@@ -4,27 +4,27 @@
 
 ### T50.1: Create EnrollmentPeriod entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/EnrollmentPeriod.cs` implementing `ITenantScoped`.
-- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
+- **Action:** Create `src/Ciclo.Core/Entities/EnrollmentPeriod.cs` implementing `ITenantScoped`.
+- **Verify:** `dotnet build src/Ciclo.Core` exits 0.
 
 ### T50.2: Create Enrollment entity + EnrollmentStatus enum
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/Enrollment.cs` implementing `ITenantScoped`. Create `EnrollmentStatus` enum with all 6 states.
+- **Action:** Create `src/Ciclo.Core/Entities/Enrollment.cs` implementing `ITenantScoped`. Create `EnrollmentStatus` enum with all 6 states.
 - **Verify:** `dotnet build` exits 0.
 
 ### T50.3: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/EnrollmentDtos.cs` with all records.
+- **Action:** Create `src/Ciclo.Api/Contracts/EnrollmentDtos.cs` with all records.
 - **Verify:** `dotnet build` exits 0.
 
 ### T50.4: Create EnrollmentService with state machine
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/EnrollmentService.cs`. Implement `CanTransition(from, to): bool` with transition table. Methods: CreateAsync, SubmitAsync, ApproveAsync, RejectAsync, CancelAsync. Period management: CreatePeriodAsync, ClosePeriodAsync.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/EnrollmentService.cs`. Implement `CanTransition(from, to): bool` with transition table. Methods: CreateAsync, SubmitAsync, ApproveAsync, RejectAsync, CancelAsync. Period management: CreatePeriodAsync, ClosePeriodAsync.
 - **Verify:** Unit tests for all valid and invalid transitions.
 
 ### T50.5: Create EnrollmentController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/EnrollmentController.cs` with all endpoints and auth attributes.
+- **Action:** Create `src/Ciclo.Api/Controllers/EnrollmentController.cs` with all endpoints and auth attributes.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T50.6: Update AppDbContext

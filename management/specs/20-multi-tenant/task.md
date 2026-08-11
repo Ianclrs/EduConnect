@@ -4,20 +4,20 @@
 
 ### T20.1: Create Tenant entity
 - [x] done
-- **Action:** Create file `src/EduGestor.Core/Entities/Tenant.cs` with class `Tenant` in namespace `EduGestor.Core.Entities`.
+- **Action:** Create file `src/Ciclo.Core/Entities/Tenant.cs` with class `Tenant` in namespace `Ciclo.Core.Entities`.
 - **Properties:** `Id` (Guid), `Name` (string), `Slug` (string), `IsActive` (bool, default true), `CreatedAt` (DateTime).
-- **Verify:** File compiles: `dotnet build src/EduGestor.Core/EduGestor.Core.csproj` exits 0.
+- **Verify:** File compiles: `dotnet build src/Ciclo.Core/Ciclo.Core.csproj` exits 0.
 
 ### T20.2: Create ITenantScoped interface
 - [x] done
-- **Action:** Create file `src/EduGestor.Core/Interfaces/ITenantScoped.cs` with interface `ITenantScoped` in namespace `EduGestor.Core.Interfaces`.
+- **Action:** Create file `src/Ciclo.Core/Interfaces/ITenantScoped.cs` with interface `ITenantScoped` in namespace `Ciclo.Core.Interfaces`.
 - **Property:** `Guid TenantId { get; }` (getter only).
 - **XML doc comment:** `/// <summary>Marker interface for entities whose data is scoped to a specific tenant.</summary>`
-- **Verify:** File compiles: `dotnet build src/EduGestor.Core/EduGestor.Core.csproj` exits 0.
+- **Verify:** File compiles: `dotnet build src/Ciclo.Core/Ciclo.Core.csproj` exits 0.
 
 ### T20.3: Create ITenantContext and TenantContext
 - [x] done
-- **Action:** Create file `src/EduGestor.Infrastructure/Tenancy/TenantContext.cs` in namespace `EduGestor.Infrastructure.Tenancy`.
+- **Action:** Create file `src/Ciclo.Infrastructure/Tenancy/TenantContext.cs` in namespace `Ciclo.Infrastructure.Tenancy`.
 - **Interface `ITenantContext`:**
   - `Guid TenantId { get; }`
   - `bool IsResolved { get; }`
@@ -26,19 +26,19 @@
   - `TenantId` getter: returns `_tenantId ?? throw new TenantNotResolvedException()`.
   - `IsResolved` getter: returns `_tenantId.HasValue`.
   - Method: `public void SetTenant(Guid tenantId) => _tenantId = tenantId;`
-- **Verify:** File compiles: `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
+- **Verify:** File compiles: `dotnet build src/Ciclo.Infrastructure/Ciclo.Infrastructure.csproj` exits 0.
 
 ### T20.4: Create TenantNotResolvedException
 - [x] done
-- **Action:** Create file `src/EduGestor.Infrastructure/Tenancy/TenantNotResolvedException.cs` in namespace `EduGestor.Infrastructure.Tenancy`.
+- **Action:** Create file `src/Ciclo.Infrastructure/Tenancy/TenantNotResolvedException.cs` in namespace `Ciclo.Infrastructure.Tenancy`.
 - **Class:** Inherits `InvalidOperationException`.
 - **Default ctor:** `base("No tenant context resolved for the current request.")`
 - **Message ctor:** `base(message)` accepting a `string message` parameter.
-- **Verify:** File compiles: `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
+- **Verify:** File compiles: `dotnet build src/Ciclo.Infrastructure/Ciclo.Infrastructure.csproj` exits 0.
 
 ### T20.5: Create TenantMiddleware
 - [x] done
-- **Action:** Create file `src/EduGestor.Api/Middleware/TenantMiddleware.cs` in namespace `EduGestor.Api.Middleware`.
+- **Action:** Create file `src/Ciclo.Api/Middleware/TenantMiddleware.cs` in namespace `Ciclo.Api.Middleware`.
 - **Constructor:** Accept `RequestDelegate next`.
 - **InvokeAsync method:**
   - Parameters: `HttpContext context`, `ITenantContext tenantContext` (injected from DI).
@@ -56,11 +56,11 @@
   - Invalid GUID + [Authorize] → 401 JSON.
   - Invalid GUID + public endpoint → silently continue.
   - No authenticated user + [Authorize] → let Authorization middleware handle it.
-- **Verify:** File compiles: `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
+- **Verify:** File compiles: `dotnet build src/Ciclo.Api/Ciclo.Api.csproj` exits 0.
 
 ### T20.6: Update AppDbContext
 - [x] done
-- **Action:** Modify file `src/EduGestor.Infrastructure/Data/AppDbContext.cs`.
+- **Action:** Modify file `src/Ciclo.Infrastructure/Data/AppDbContext.cs`.
 - **Add:**
   1. Private readonly field: `private readonly ITenantContext _tenantContext;`
   2. Constructor parameter: add `ITenantContext tenantContext` and assign to `_tenantContext`.
@@ -79,12 +79,12 @@
      - If `!_tenantContext.IsResolved`, return.
      - Iterate `ChangeTracker.Entries()` where `State == EntityState.Added && Entity is ITenantScoped`.
      - If `entity.TenantId == Guid.Empty`: get `TenantId` property via reflection, set value to `_tenantContext.TenantId`.
-- **Import:** Add `using System.Linq.Expressions;`, `using EduGestor.Core.Entities;`, `using EduGestor.Core.Interfaces;`, `using EduGestor.Infrastructure.Tenancy;` as needed.
-- **Verify:** `dotnet build src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj` exits 0.
+- **Import:** Add `using System.Linq.Expressions;`, `using Ciclo.Core.Entities;`, `using Ciclo.Core.Interfaces;`, `using Ciclo.Infrastructure.Tenancy;` as needed.
+- **Verify:** `dotnet build src/Ciclo.Infrastructure/Ciclo.Infrastructure.csproj` exits 0.
 
 ### T20.7: Register services in DI (Program.cs)
 - [x] done
-- **Action:** Modify file `src/EduGestor.Api/Program.cs`.
+- **Action:** Modify file `src/Ciclo.Api/Program.cs`.
 - **Add BEFORE `builder.Build()`:**
   ```csharp
   builder.Services.AddScoped<TenantContext>();
@@ -94,11 +94,11 @@
   ```csharp
   app.UseMiddleware<TenantMiddleware>();
   ```
-- **Verify:** `dotnet build src/EduGestor.Api/EduGestor.Api.csproj` exits 0.
+- **Verify:** `dotnet build src/Ciclo.Api/Ciclo.Api.csproj` exits 0.
 
 ### T20.8: Create TenantSeeder and wire into startup
 - [x] done
-- **Action:** Create file `src/EduGestor.Infrastructure/Data/Seeders/TenantSeeder.cs` in namespace `EduGestor.Infrastructure.Data.Seeders`.
+- **Action:** Create file `src/Ciclo.Infrastructure/Data/Seeders/TenantSeeder.cs` in namespace `Ciclo.Infrastructure.Data.Seeders`.
 - **Static class `TenantSeeder` with method:**
   ```csharp
   public static async Task SeedAsync(AppDbContext dbContext,
@@ -114,7 +114,7 @@
 
 ### T20.9: Add unit tests
 - [x] done
-- **Action:** Create test files in `tests/EduGestor.Infrastructure.Tests/` (or existing test project):
+- **Action:** Create test files in `tests/Ciclo.Infrastructure.Tests/` (or existing test project):
   - `TenantContextTests.cs`:
     - `SetTenant_ValidGuid_SetsTenantId()` — verifies `IsResolved` becomes true, `TenantId` returns the guid.
     - `TenantId_NotSet_ThrowsTenantNotResolvedException()` — fresh `TenantContext`, accessing `TenantId` throws.
@@ -131,17 +131,17 @@
 
 ### T20.10: Add tenant-scoped entity assembly scan test
 - [x] done
-- **Action:** Create file `tests/EduGestor.Core.Tests/TenantScopedEntitiesTests.cs` (or add to existing test project).
+- **Action:** Create file `tests/Ciclo.Core.Tests/TenantScopedEntitiesTests.cs` (or add to existing test project).
 - **Test method `AllTenantScopedEntities_ImplementITenantScoped`:**
-  - Scan assembly `EduGestor.Core.dll` for all types that are classes (not abstract, not interface) with a public `TenantId` property of type `Guid`.
+  - Scan assembly `Ciclo.Core.dll` for all types that are classes (not abstract, not interface) with a public `TenantId` property of type `Guid`.
   - For each such type, assert `typeof(ITenantScoped).IsAssignableFrom(type)` — fails if an entity has `TenantId` but forgot to implement `ITenantScoped`.
   - This prevents future developers/agents from adding tenant-scoped entities without the interface.
 - **Verify:** `dotnet test` — test passes (no entities match yet, so trivially passing until future specs add entities).
 
 ### T20.11: Create EF Core migration
 - [x] done
-- **Action:** Run `dotnet ef migrations add CreateTenantTable --project src/EduGestor.Infrastructure --startup-project src/EduGestor.Api`.
-- **Verify:** Migration file is created in `src/EduGestor.Infrastructure/Migrations/`. SQL contains `CREATE TABLE "Tenants"` with unique index on `Slug`, column constraints (max length, not null, defaults). `dotnet build` exits 0.
+- **Action:** Run `dotnet ef migrations add CreateTenantTable --project src/Ciclo.Infrastructure --startup-project src/Ciclo.Api`.
+- **Verify:** Migration file is created in `src/Ciclo.Infrastructure/Migrations/`. SQL contains `CREATE TABLE "Tenants"` with unique index on `Slug`, column constraints (max length, not null, defaults). `dotnet build` exits 0.
 
 ## Task Dependency Order
 

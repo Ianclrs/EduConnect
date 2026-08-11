@@ -49,7 +49,7 @@ Client                  API                         DB
 
 ## Domain Entities
 
-### User (EduGestor.Core/Entities/User.cs)
+### User (Ciclo.Core/Entities/User.cs)
 ```csharp
 public class User : ITenantScoped
 {
@@ -75,7 +75,7 @@ public enum UserRole
 }
 ```
 
-### RefreshToken (EduGestor.Core/Entities/RefreshToken.cs)
+### RefreshToken (Ciclo.Core/Entities/RefreshToken.cs)
 ```csharp
 public class RefreshToken
 {
@@ -95,7 +95,7 @@ public class RefreshToken
 
 ## DTOs
 
-### AuthDtos (EduGestor.Api/Contracts/AuthDtos.cs)
+### AuthDtos (Ciclo.Api/Contracts/AuthDtos.cs)
 ```csharp
 public record RegisterRequest(string Email, string Password, string Name, Guid TenantId);
 public record LoginRequest(string Email, string Password);
@@ -106,7 +106,7 @@ public record ResetPasswordRequest(string Email, string Token, string NewPasswor
 public record RefreshRequest(); // body is empty, token comes from cookie
 ```
 
-## AuthService (EduGestor.Infrastructure/Services/AuthService.cs)
+## AuthService (Ciclo.Infrastructure/Services/AuthService.cs)
 
 ```csharp
 public interface IAuthService
@@ -126,7 +126,7 @@ public class AuthService : IAuthService
 }
 ```
 
-## JwtTokenGenerator (EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs)
+## JwtTokenGenerator (Ciclo.Infrastructure/Auth/JwtTokenGenerator.cs)
 
 ```csharp
 public interface IJwtTokenGenerator
@@ -139,7 +139,7 @@ Access token claims: `sub` (User.Id), `email`, `tenant_id`, `role`, `name`.
 Access token expiry: 15 minutes.
 Refresh token: 64-byte random string, 7-day expiry, stored in DB.
 
-## AuthController (EduGestor.Api/Controllers/AuthController.cs)
+## AuthController (Ciclo.Api/Controllers/AuthController.cs)
 
 | Endpoint | Method | Auth Required |
 |---|---|---|
@@ -204,13 +204,13 @@ response.Cookies.Append("refresh_token", refreshToken.Token, cookieOptions);
 
 | File | Path | Purpose |
 |---|---|---|
-| User entity | `src/EduGestor.Core/Entities/User.cs` | Identity entity, implements ITenantScoped |
-| RefreshToken entity | `src/EduGestor.Core/Entities/RefreshToken.cs` | Token entity with expiry tracking |
-| UserRole enum | `src/EduGestor.Core/Entities/UserRole.cs` | Admin=0, Staff=1, Parent=2 |
-| Auth DTOs | `src/EduGestor.Infrastructure/Contracts/AuthDtos.cs` | Request/response records (moved from Api to avoid reverse dependency) |
-| IAuthService + AuthService | `src/EduGestor.Infrastructure/Services/AuthService.cs` | Business logic |
-| IJwtTokenGenerator + impl | `src/EduGestor.Infrastructure/Auth/JwtTokenGenerator.cs` | JWT creation |
-| AuthController | `src/EduGestor.Api/Controllers/AuthController.cs` | REST endpoints + Google OAuth |
+| User entity | `src/Ciclo.Core/Entities/User.cs` | Identity entity, implements ITenantScoped |
+| RefreshToken entity | `src/Ciclo.Core/Entities/RefreshToken.cs` | Token entity with expiry tracking |
+| UserRole enum | `src/Ciclo.Core/Entities/UserRole.cs` | Admin=0, Staff=1, Parent=2 |
+| Auth DTOs | `src/Ciclo.Infrastructure/Contracts/AuthDtos.cs` | Request/response records (moved from Api to avoid reverse dependency) |
+| IAuthService + AuthService | `src/Ciclo.Infrastructure/Services/AuthService.cs` | Business logic |
+| IJwtTokenGenerator + impl | `src/Ciclo.Infrastructure/Auth/JwtTokenGenerator.cs` | JWT creation |
+| AuthController | `src/Ciclo.Api/Controllers/AuthController.cs` | REST endpoints + Google OAuth |
 
 ## Cross-Reference: Requirements → Design
 

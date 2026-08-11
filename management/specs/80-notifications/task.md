@@ -4,27 +4,27 @@
 
 ### T80.1: Create Notification entity + NotificationType enum
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/Notification.cs` implementing `ITenantScoped`. Create `NotificationType` enum.
+- **Action:** Create `src/Ciclo.Core/Entities/Notification.cs` implementing `ITenantScoped`. Create `NotificationType` enum.
 - **Verify:** `dotnet build` exits 0.
 
 ### T80.2: Create UserNotification entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/UserNotification.cs`.
+- **Action:** Create `src/Ciclo.Core/Entities/UserNotification.cs`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T80.3: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Contracts/NotificationDtos.cs`.
+- **Action:** Create `src/Ciclo.Infrastructure/Contracts/NotificationDtos.cs`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T80.4: Create NotificationService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/NotificationService.cs`. All methods: CreateAsync, BroadcastAsync, SendByStudentAsync, GetForUserAsync, MarkReadAsync, MarkAllReadAsync, GetUnreadCountAsync.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/NotificationService.cs`. All methods: CreateAsync, BroadcastAsync, SendByStudentAsync, GetForUserAsync, MarkReadAsync, MarkAllReadAsync, GetUnreadCountAsync.
 - **Verify:** Unit tests for all methods.
 
 ### T80.5: Create NotificationController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/NotificationController.cs` with all endpoints.
+- **Action:** Create `src/Ciclo.Api/Controllers/NotificationController.cs` with all endpoints.
 - **Verify:** Integration tests.
 
 ### T80.6: Integrate with Document verification

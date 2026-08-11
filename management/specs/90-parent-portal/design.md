@@ -38,7 +38,7 @@ All endpoints under `/parent`, require `[Authorize(Roles = "Parent")]`.
 | `POST /parent/children/{id}/documents/upload` | Upload document for child |
 | `GET /parent/children/{id}/grades` | Grades placeholder |
 
-## DTOs (EduGestor.Api/Contracts/ParentDtos.cs)
+## DTOs (Ciclo.Api/Contracts/ParentDtos.cs)
 ```csharp
 public record ParentDashboardDto(int TotalChildren, int UnreadNotifications, int PendingDocuments, int ActiveEnrollments, List<ChildSummaryDto> Children);
 public record ChildSummaryDto(Guid StudentId, string Nome, string Turma, int AnoLetivo, string? EnrollmentStatus, int PendingDocuments);
@@ -46,7 +46,7 @@ public record ChildDetailDto(StudentDto Student, List<DocumentDto> Documents, En
 public record GradeDto(string Disciplina, decimal? Nota, string? Observacoes); // placeholder
 ```
 
-## ParentService (EduGestor.Infrastructure/Services/ParentService.cs)
+## ParentService (Ciclo.Infrastructure/Services/ParentService.cs)
 ```csharp
 public interface IParentService
 {
@@ -70,7 +70,7 @@ private async Task VerifyParentChildLinkAsync(Guid parentId, Guid studentId)
 }
 ```
 
-## ForbiddenException (EduGestor.Api/Middleware/ForbiddenException.cs)
+## ForbiddenException (Ciclo.Api/Middleware/ForbiddenException.cs)
 ```csharp
 public class ForbiddenException : Exception
 {
@@ -83,11 +83,11 @@ public class ForbiddenException : Exception
 
 | File | Path |
 |---|---|
-| Parent DTOs | `src/EduGestor.Infrastructure/Contracts/ParentDtos.cs` |
-| IParentService + impl | `src/EduGestor.Infrastructure/Services/ParentService.cs` |
-| ParentController | `src/EduGestor.Api/Controllers/ParentController.cs` |
-| ForbiddenException | `src/EduGestor.Core/Exceptions/ForbiddenException.cs` |
-| ExceptionMiddleware | `src/EduGestor.Api/Middleware/ExceptionMiddleware.cs` |
+| Parent DTOs | `src/Ciclo.Infrastructure/Contracts/ParentDtos.cs` |
+| IParentService + impl | `src/Ciclo.Infrastructure/Services/ParentService.cs` |
+| ParentController | `src/Ciclo.Api/Controllers/ParentController.cs` |
+| ForbiddenException | `src/Ciclo.Core/Exceptions/ForbiddenException.cs` |
+| ExceptionMiddleware | `src/Ciclo.Api/Middleware/ExceptionMiddleware.cs` |
 
 ## Cross-Reference: Requirements → Design
 

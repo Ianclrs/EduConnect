@@ -93,9 +93,9 @@ if (missingTypes.Any())
 
 | File | Path |
 |---|---|
-| Reenrollment DTOs | `src/EduGestor.Api/Contracts/ReenrollmentDtos.cs` |
-| IReenrollmentService + impl | `src/EduGestor.Infrastructure/Services/ReenrollmentService.cs` |
-| ReenrollmentController | `src/EduGestor.Api/Controllers/ReenrollmentController.cs` |
+| Reenrollment DTOs | `src/Ciclo.Api/Contracts/ReenrollmentDtos.cs` |
+| IReenrollmentService + impl | `src/Ciclo.Infrastructure/Services/ReenrollmentService.cs` |
+| ReenrollmentController | `src/Ciclo.Api/Controllers/ReenrollmentController.cs` |
 
 ## Cross-Reference: Requirements → Design
 

@@ -31,7 +31,7 @@ O reparo/reinstalação do SDK não resolve — a versão 10.0.302 é a mais rec
 curl -sL "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -o /tmp/nuget.exe
 
 # Restaurar
-/tmp/nuget.exe restore EduGestor.sln
+/tmp/nuget.exe restore Ciclo.sln
 ```
 
 O `nuget.exe` standalone tem seu próprio runtime NuGet, não usa o `NuGet.Configuration.dll` do SDK.
@@ -42,7 +42,7 @@ O `nuget.exe` standalone tem seu próprio runtime NuGet, não usa o `NuGet.Confi
 MSBUILD="C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/bin/MSBuild.exe"
 
 # Build
-"$MSBUILD" EduGestor.sln -t:Build -p:Configuration=Debug -v:minimal
+"$MSBUILD" Ciclo.sln -t:Build -p:Configuration=Debug -v:minimal
 ```
 
 O MSBuild do VS é .NET Framework (não .NET Core), não sofre do bug do SDK. **Flags usam `-` (não `/`)**: `-t:Build`, `-p:Configuration=Debug`, `-v:minimal`.
@@ -63,10 +63,10 @@ O `dotnet ef` não está instalado e `dotnet tool install` depende do NuGet. Sol
 
 ```bash
 # 1. Se adicionar/remover pacotes NuGet: editar .csproj, depois:
-/tmp/nuget.exe restore EduGestor.sln
+/tmp/nuget.exe restore Ciclo.sln
 
 # 2. Build
-"$MSBUILD" EduGestor.sln -t:Build -p:Configuration=Debug -v:minimal
+"$MSBUILD" Ciclo.sln -t:Build -p:Configuration=Debug -v:minimal
 
 # 3. Testes
 dotnet test --no-build

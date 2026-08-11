@@ -1,5 +1,5 @@
 -- ============================================================================
--- EduGestor - Database Initialization Script
+-- Ciclo - Database Initialization Script
 -- ============================================================================
 -- Usage:
 --   psql -U postgres -f init-db.sql
@@ -24,7 +24,7 @@
 
 -- Notify progress
 \echo '========================================'
-\echo 'EduGestor - Database Initialization'
+\echo 'Ciclo - Database Initialization'
 \echo '========================================'
 
 -- --------------------------------------------------------------------------

@@ -34,7 +34,7 @@ POST /enrollments/{id}/approve
 
 ## Domain Entities
 
-### EnrollmentPeriod (EduGestor.Core/Entities/EnrollmentPeriod.cs)
+### EnrollmentPeriod (Ciclo.Core/Entities/EnrollmentPeriod.cs)
 ```csharp
 public class EnrollmentPeriod : ITenantScoped
 {
@@ -51,7 +51,7 @@ public class EnrollmentPeriod : ITenantScoped
 }
 ```
 
-### Enrollment (EduGestor.Core/Entities/Enrollment.cs)
+### Enrollment (Ciclo.Core/Entities/Enrollment.cs)
 ```csharp
 public class Enrollment : ITenantScoped
 {
@@ -131,12 +131,12 @@ public record RejectEnrollmentRequest(string Motivo);
 
 | File | Path |
 |---|---|
-| Enrollment entity | `src/EduGestor.Core/Entities/Enrollment.cs` |
-| EnrollmentPeriod entity | `src/EduGestor.Core/Entities/EnrollmentPeriod.cs` |
-| EnrollmentStatus enum | `src/EduGestor.Core/Entities/EnrollmentStatus.cs` |
-| DTOs | `src/EduGestor.Api/Contracts/EnrollmentDtos.cs` |
-| IEnrollmentService + impl | `src/EduGestor.Infrastructure/Services/EnrollmentService.cs` |
-| EnrollmentController | `src/EduGestor.Api/Controllers/EnrollmentController.cs` |
+| Enrollment entity | `src/Ciclo.Core/Entities/Enrollment.cs` |
+| EnrollmentPeriod entity | `src/Ciclo.Core/Entities/EnrollmentPeriod.cs` |
+| EnrollmentStatus enum | `src/Ciclo.Core/Entities/EnrollmentStatus.cs` |
+| DTOs | `src/Ciclo.Api/Contracts/EnrollmentDtos.cs` |
+| IEnrollmentService + impl | `src/Ciclo.Infrastructure/Services/EnrollmentService.cs` |
+| EnrollmentController | `src/Ciclo.Api/Controllers/EnrollmentController.cs` |
 
 ## Cross-Reference: Requirements → Design
 

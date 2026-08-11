@@ -23,7 +23,7 @@ POST /notifications { titulo, mensagem, tipo, userIds: [...] }
 
 ## Domain Entities
 
-### Notification (EduGestor.Core/Entities/Notification.cs)
+### Notification (Ciclo.Core/Entities/Notification.cs)
 ```csharp
 public class Notification : ITenantScoped
 {
@@ -88,12 +88,12 @@ public record NotificationDto(Guid Id, Guid UserNotificationId, string Titulo, s
 
 | File | Path |
 |---|---|
-| Notification entity | `src/EduGestor.Core/Entities/Notification.cs` |
-| UserNotification entity | `src/EduGestor.Core/Entities/UserNotification.cs` |
-| NotificationType enum | `src/EduGestor.Core/Entities/Notification.cs` (same file as Notification entity) |
-| DTOs | `src/EduGestor.Infrastructure/Contracts/NotificationDtos.cs` |
-| INotificationService + impl | `src/EduGestor.Infrastructure/Services/NotificationService.cs` |
-| NotificationController | `src/EduGestor.Api/Controllers/NotificationController.cs` |
+| Notification entity | `src/Ciclo.Core/Entities/Notification.cs` |
+| UserNotification entity | `src/Ciclo.Core/Entities/UserNotification.cs` |
+| NotificationType enum | `src/Ciclo.Core/Entities/Notification.cs` (same file as Notification entity) |
+| DTOs | `src/Ciclo.Infrastructure/Contracts/NotificationDtos.cs` |
+| INotificationService + impl | `src/Ciclo.Infrastructure/Services/NotificationService.cs` |
+| NotificationController | `src/Ciclo.Api/Controllers/NotificationController.cs` |
 
 ## Cross-Reference: Requirements → Design
 

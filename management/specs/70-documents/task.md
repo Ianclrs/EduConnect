@@ -4,27 +4,27 @@
 
 ### T70.1: Create DocumentType entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/DocumentType.cs` implementing `ITenantScoped`.
-- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
+- **Action:** Create `src/Ciclo.Core/Entities/DocumentType.cs` implementing `ITenantScoped`.
+- **Verify:** `dotnet build src/Ciclo.Core` exits 0.
 
 ### T70.2: Create Document entity + DocumentStatus enum
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/Document.cs` implementing `ITenantScoped`. Create `DocumentStatus` enum.
+- **Action:** Create `src/Ciclo.Core/Entities/Document.cs` implementing `ITenantScoped`. Create `DocumentStatus` enum.
 - **Verify:** `dotnet build` exits 0.
 
 ### T70.3: Create IFileStorage + LocalFileStorage
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Storage/IFileStorage.cs` and `LocalFileStorage.cs`. Sanitize filenames. Configure DI.
+- **Action:** Create `src/Ciclo.Infrastructure/Storage/IFileStorage.cs` and `LocalFileStorage.cs`. Sanitize filenames. Configure DI.
 - **Verify:** Unit test: save file, verify exists on disk, get stream, delete.
 
 ### T70.4: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/DocumentDtos.cs`.
+- **Action:** Create `src/Ciclo.Api/Contracts/DocumentDtos.cs`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T70.5: Create DocumentService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/DocumentService.cs`. Upload (validate + save), Verify (approve/reject + calculate validity), GetPending, GetExpiring.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/DocumentService.cs`. Upload (validate + save), Verify (approve/reject + calculate validity), GetPending, GetExpiring.
 - **Verify:** Unit tests for upload validation, verification with/without validity.
 
 ### T70.6: Create DocumentTypeService + Controller endpoints

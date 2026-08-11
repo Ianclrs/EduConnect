@@ -4,12 +4,12 @@
 
 ### T40.1: Create Student entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/Student.cs` implementing `ITenantScoped`. Create `StudentStatus` enum.
-- **Verify:** `dotnet build src/EduGestor.Core` exits 0.
+- **Action:** Create `src/Ciclo.Core/Entities/Student.cs` implementing `ITenantScoped`. Create `StudentStatus` enum.
+- **Verify:** `dotnet build src/Ciclo.Core` exits 0.
 
 ### T40.2: Create StudentParent join entity
 - [x] done
-- **Action:** Create `src/EduGestor.Core/Entities/StudentParent.cs` with composite key.
+- **Action:** Create `src/Ciclo.Core/Entities/StudentParent.cs` with composite key.
 - **Verify:** `dotnet build` exits 0.
 
 ### T40.3: Update AppDbContext
@@ -19,17 +19,17 @@
 
 ### T40.4: Create DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/StudentDtos.cs` with all records including `PagedResponse<T>`.
+- **Action:** Create `src/Ciclo.Api/Contracts/StudentDtos.cs` with all records including `PagedResponse<T>`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T40.5: Create StudentService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/StudentService.cs` with all 7 methods. Parent filter: join StudentParent.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/StudentService.cs` with all 7 methods. Parent filter: join StudentParent.
 - **Verify:** Unit tests: CRUD, link/unlink, parent filter, soft-delete refusal with active enrollment.
 
 ### T40.6: Create StudentController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/StudentController.cs` with all endpoints and auth attributes.
+- **Action:** Create `src/Ciclo.Api/Controllers/StudentController.cs` with all endpoints and auth attributes.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T40.7: EF Migration and verify

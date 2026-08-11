@@ -3,34 +3,34 @@
 ## Tasks
 
 ### T1.1: Create solution and projects
-- [x] Run `dotnet new sln -n EduGestor`
-- [x] Run `dotnet new webapi -n EduGestor.Api -o src/EduGestor.Api`
-- [x] Run `dotnet new classlib -n EduGestor.Core -o src/EduGestor.Core`
-- [x] Run `dotnet new classlib -n EduGestor.Infrastructure -o src/EduGestor.Infrastructure`
-- [x] Run `dotnet new xunit -n EduGestor.Api.Tests -o tests/EduGestor.Api.Tests`
+- [x] Run `dotnet new sln -n Ciclo`
+- [x] Run `dotnet new webapi -n Ciclo.Api -o src/Ciclo.Api`
+- [x] Run `dotnet new classlib -n Ciclo.Core -o src/Ciclo.Core`
+- [x] Run `dotnet new classlib -n Ciclo.Infrastructure -o src/Ciclo.Infrastructure`
+- [x] Run `dotnet new xunit -n Ciclo.Api.Tests -o tests/Ciclo.Api.Tests`
 - [x] Add all projects to solution: `dotnet sln add src/*/`
 - [x] Add project references:
-  - `EduGestor.Api` → `EduGestor.Infrastructure`, `EduGestor.Core`
-  - `EduGestor.Infrastructure` → `EduGestor.Core`
-  - `EduGestor.Api.Tests` → `EduGestor.Api`
+  - `Ciclo.Api` → `Ciclo.Infrastructure`, `Ciclo.Core`
+  - `Ciclo.Infrastructure` → `Ciclo.Core`
+  - `Ciclo.Api.Tests` → `Ciclo.Api`
 
 ### T1.2: Configure Directory.Build.props
 - [x] Create `Directory.Build.props` at solution root
 - [x] Set TargetFramework=net10.0, Nullable=enable, ImplicitUsings=enable, TreatWarningsAsErrors=true
 
 ### T1.3: Install NuGet packages
-- [x] EduGestor.Api: Swashbuckle.AspNetCore 10.*, Serilog.AspNetCore 9.*, Microsoft.EntityFrameworkCore.Design 10.*, Npgsql.EntityFrameworkCore.PostgreSQL 10.*
-- [x] EduGestor.Infrastructure: Npgsql.EntityFrameworkCore.PostgreSQL 10.*, Microsoft.EntityFrameworkCore 10.*
-- [x] EduGestor.Api.Tests: Microsoft.AspNetCore.Mvc.Testing 10.*
+- [x] Ciclo.Api: Swashbuckle.AspNetCore 10.*, Serilog.AspNetCore 9.*, Microsoft.EntityFrameworkCore.Design 10.*, Npgsql.EntityFrameworkCore.PostgreSQL 10.*
+- [x] Ciclo.Infrastructure: Npgsql.EntityFrameworkCore.PostgreSQL 10.*, Microsoft.EntityFrameworkCore 10.*
+- [x] Ciclo.Api.Tests: Microsoft.AspNetCore.Mvc.Testing 10.*
 
 ### T1.4: Create AppDbContext
-- [x] Create `src/EduGestor.Infrastructure/Data/AppDbContext.cs`
+- [x] Create `src/Ciclo.Infrastructure/Data/AppDbContext.cs`
 - [x] Inherit from DbContext, empty DbSets for now
 - [x] Override OnModelCreating (empty, placeholder for future configs)
 - [x] Create DI registration extension: `AddInfrastructure(IConfiguration)` in DependencyInjection.cs
 
 ### T1.5: Create HealthController
-- [x] Create `src/EduGestor.Api/Controllers/HealthController.cs`
+- [x] Create `src/Ciclo.Api/Controllers/HealthController.cs`
 - [x] Implement GET `/health` returning 200 with status JSON
 - [x] Implement GET `/health/db` checking `db.Database.CanConnectAsync()`
 
@@ -43,11 +43,11 @@
 - [x] Add db migration auto-apply in Development mode
 
 ### T1.7: Configure appsettings
-- [x] Create `src/EduGestor.Api/appsettings.json` with Serilog configuration (MinimumLevel: Information, override AspNetCore/EFCore to Warning) and AllowedHosts: *
-- [x] Create `src/EduGestor.Api/appsettings.Development.json` with Serilog Debug level and ConnectionStrings:Default = `Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30`
+- [x] Create `src/Ciclo.Api/appsettings.json` with Serilog configuration (MinimumLevel: Information, override AspNetCore/EFCore to Warning) and AllowedHosts: *
+- [x] Create `src/Ciclo.Api/appsettings.Development.json` with Serilog Debug level and ConnectionStrings:Default = `Host=localhost;Database=edugestor;Username=edugestor;Password=1234;Timeout=5;Command Timeout=30`
 
 ### T1.8: Create Dockerfile
-- [x] Create multi-stage Dockerfile in `src/EduGestor.Api/Dockerfile`
+- [x] Create multi-stage Dockerfile in `src/Ciclo.Api/Dockerfile`
 - [x] Build stage: `mcr.microsoft.com/dotnet/sdk:10.0`
 - [x] Runtime stage: `mcr.microsoft.com/dotnet/aspnet:10.0`
 - [x] Expose port 8080
@@ -66,7 +66,7 @@
 - [x] `DB_PASSWORD=1234` — placeholder value
 
 ### T1.12: Create HealthControllerTests
-- [x] Create `tests/EduGestor.Api.Tests/HealthControllerTests.cs`
+- [x] Create `tests/Ciclo.Api.Tests/HealthControllerTests.cs`
 - [x] Use `WebApplicationFactory<Program>` for integration testing
 - [x] Test `GET /health` returns 200 OK and response body is `{"status":"Healthy"}`
 - [x] Test `GET /health/db` returns 200 OK when database is reachable (requires running PostgreSQL)

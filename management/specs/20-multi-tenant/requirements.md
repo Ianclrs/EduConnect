@@ -22,7 +22,7 @@ This spec delivers **V2: Multi-Tenant Architecture** from `management/vision.md`
 - Acceptance: EF Core migration creates a `Tenants` table with a unique index on `Slug`. Model validation rejects slugs that are not lowercase alphanumeric + hyphens.
 
 ### FR2: ITenantScoped Interface
-- The system MUST define `ITenantScoped` interface in `EduGestor.Core/Interfaces/` with a single property: `Guid TenantId { get; }`.
+- The system MUST define `ITenantScoped` interface in `Ciclo.Core/Interfaces/` with a single property: `Guid TenantId { get; }`.
 - Acceptance: The interface compiles and can be implemented by any entity class.
 
 ### FR3: Tenant-Scoped Entities
@@ -86,9 +86,9 @@ This spec delivers **V2: Multi-Tenant Architecture** from `management/vision.md`
 - The `TenantSeeder` MUST be idempotent — running it multiple times MUST NOT create duplicate tenants.
 
 ### NFR4: Maintainability (AI-First)
-- All tenant-related infrastructure code MUST be in exactly two directories: `src/EduGestor.Infrastructure/Tenancy/` and `src/EduGestor.Api/Middleware/`.
-- The `ITenantScoped` interface MUST be in `src/EduGestor.Core/Interfaces/`.
-- The `Tenant` entity MUST be in `src/EduGestor.Core/Entities/`.
+- All tenant-related infrastructure code MUST be in exactly two directories: `src/Ciclo.Infrastructure/Tenancy/` and `src/Ciclo.Api/Middleware/`.
+- The `ITenantScoped` interface MUST be in `src/Ciclo.Core/Interfaces/`.
+- The `Tenant` entity MUST be in `src/Ciclo.Core/Entities/`.
 
 ## Constraints
 

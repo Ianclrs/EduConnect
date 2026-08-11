@@ -36,7 +36,7 @@ POST /documents/{id}/verify { approved: false, motivoRejeicao: "ilegível" }
 
 ## Domain Entities
 
-### DocumentType (EduGestor.Core/Entities/DocumentType.cs)
+### DocumentType (Ciclo.Core/Entities/DocumentType.cs)
 ```csharp
 public class DocumentType : ITenantScoped
 {
@@ -51,7 +51,7 @@ public class DocumentType : ITenantScoped
 }
 ```
 
-### Document (EduGestor.Core/Entities/Document.cs)
+### Document (Ciclo.Core/Entities/Document.cs)
 ```csharp
 public class Document : ITenantScoped
 {
@@ -77,7 +77,7 @@ public enum DocumentStatus { Pendente = 0, Aprovado = 1, Rejeitado = 2 }
 
 ## File Storage
 
-### IFileStorage (EduGestor.Infrastructure/Storage/IFileStorage.cs)
+### IFileStorage (Ciclo.Infrastructure/Storage/IFileStorage.cs)
 ```csharp
 public interface IFileStorage
 {
@@ -128,14 +128,14 @@ public record VerifyDocumentRequest(bool Approved, string? MotivoRejeicao);
 
 | File | Path |
 |---|---|
-| DocumentType entity | `src/EduGestor.Core/Entities/DocumentType.cs` |
-| Document entity | `src/EduGestor.Core/Entities/Document.cs` |
-| DocumentStatus enum | `src/EduGestor.Core/Entities/DocumentStatus.cs` |
-| IFileStorage | `src/EduGestor.Infrastructure/Storage/IFileStorage.cs` |
-| LocalFileStorage | `src/EduGestor.Infrastructure/Storage/LocalFileStorage.cs` |
-| DTOs | `src/EduGestor.Api/Contracts/DocumentDtos.cs` |
-| IDocumentService + impl | `src/EduGestor.Infrastructure/Services/DocumentService.cs` |
-| DocumentController | `src/EduGestor.Api/Controllers/DocumentController.cs` |
+| DocumentType entity | `src/Ciclo.Core/Entities/DocumentType.cs` |
+| Document entity | `src/Ciclo.Core/Entities/Document.cs` |
+| DocumentStatus enum | `src/Ciclo.Core/Entities/DocumentStatus.cs` |
+| IFileStorage | `src/Ciclo.Infrastructure/Storage/IFileStorage.cs` |
+| LocalFileStorage | `src/Ciclo.Infrastructure/Storage/LocalFileStorage.cs` |
+| DTOs | `src/Ciclo.Api/Contracts/DocumentDtos.cs` |
+| IDocumentService + impl | `src/Ciclo.Infrastructure/Services/DocumentService.cs` |
+| DocumentController | `src/Ciclo.Api/Controllers/DocumentController.cs` |
 
 ## Cross-Reference: Requirements → Design
 

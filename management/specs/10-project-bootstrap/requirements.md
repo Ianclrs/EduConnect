@@ -23,15 +23,15 @@ Inicializa a solução backend completa em .NET 10 com separação adequada de p
 
 ## Entrega de Valor
 
-Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec entrega toda a fundação técnica da plataforma EduGestor: um projeto API .NET 10 executável, conectividade com PostgreSQL via Docker, integração com EF Core, endpoints de monitoramento de saúde e prontidão para build/CI. Sem esta spec, nenhuma outra spec pode iniciar sua implementação.
+Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec entrega toda a fundação técnica da plataforma Ciclo: um projeto API .NET 10 executável, conectividade com PostgreSQL via Docker, integração com EF Core, endpoints de monitoramento de saúde e prontidão para build/CI. Sem esta spec, nenhuma outra spec pode iniciar sua implementação.
 
 ## Requisitos Funcionais
 
 | ID | Requisito | Cobertura AC |
 |---|---|---|
-| FR1 | A solução DEVE conter 4 projetos: EduGestor.Api, EduGestor.Core, EduGestor.Infrastructure, EduGestor.Api.Tests | AC1, AC7 |
-| FR2 | EduGestor.Api DEVE referenciar EduGestor.Infrastructure e EduGestor.Core | AC1, AC7 |
-| FR3 | EduGestor.Infrastructure DEVE referenciar EduGestor.Core | AC1, AC7 |
+| FR1 | A solução DEVE conter 4 projetos: Ciclo.Api, Ciclo.Core, Ciclo.Infrastructure, Ciclo.Api.Tests | AC1, AC7 |
+| FR2 | Ciclo.Api DEVE referenciar Ciclo.Infrastructure e Ciclo.Core | AC1, AC7 |
+| FR3 | Ciclo.Infrastructure DEVE referenciar Ciclo.Core | AC1, AC7 |
 | FR4 | Todos os projetos DEVEM target net10.0 com Nullable habilitado, ImplicitUsings habilitado, TreatWarningsAsErrors=true | AC1 |
 | FR5 | A API DEVE expor `GET /health` retornando 200 OK com `{"status":"Healthy"}` | AC3 |
 | FR6 | A API DEVE expor `GET /health/db` retornando 200 OK quando PostgreSQL estiver acessível, 503 quando não estiver | AC4 |
@@ -64,9 +64,9 @@ Implementa o V1 (Project Bootstrap & Infrastructure) do vision.md. Esta spec ent
 |---|---|
 | C1 | Versão do .NET SDK deve ser exatamente 10.0.x — nem anterior, nem posterior |
 | C2 | Target framework deve ser `net10.0` |
-| C3 | Todos os nomes de projeto DEVEM começar com o prefixo `EduGestor.` |
+| C3 | Todos os nomes de projeto DEVEM começar com o prefixo `Ciclo.` |
 | C4 | Pastas de projeto DEVEM estar sob `src/` (código-fonte) e `tests/` (projetos de teste) |
-| C5 | Arquivo de solução DEVE ser nomeado `EduGestor.sln` na raiz do repositório |
+| C5 | Arquivo de solução DEVE ser nomeado `Ciclo.sln` na raiz do repositório |
 | C6 | Docker Compose DEVE usar `docker compose` (sintaxe do plugin v2), não `docker-compose` (v1) |
 | C7 | Porta 5432 para PostgreSQL, porta 5000 para API — estas NÃO são negociáveis para evitar conflitos com as Specs 2-10 |
 | C8 | `.env.example` DEVE existir com `DB_PASSWORD=1234` — `.env` DEVE ser ignorado pelo git |

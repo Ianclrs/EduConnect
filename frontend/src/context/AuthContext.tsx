@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const devLogin = (role: 'Admin' | 'Parent') => {
     setAccessToken('dev-token');
-    setUser({ id: 'dev-1', name: role === 'Admin' ? 'Admin Dev' : 'Pai Dev', email: 'dev@edugestor.com', role, tenantId: 'dev-tenant' });
+    setUser({ id: 'dev-1', name: role === 'Admin' ? 'Admin Dev' : 'Pai Dev', email: 'dev@ciclo.com', role, tenantId: 'dev-tenant' });
   };
 
   return (

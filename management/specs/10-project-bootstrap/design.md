@@ -75,35 +75,35 @@ HTTP Request                                                 HTTP Response
 
 ## Component / Module Breakdown
 
-### EduGestor.Api
+### Ciclo.Api
 - **Responsibility:** HTTP endpoint hosting, middleware pipeline, configuration loading.
 - **Public surface:** REST endpoints at configured ports. Swagger UI in Development.
-- **Dependencies:** EduGestor.Core, EduGestor.Infrastructure.
+- **Dependencies:** Ciclo.Core, Ciclo.Infrastructure.
 - **Reasons to change:** New controller added, middleware pipeline reordered, new NuGet package for API layer.
 
-### EduGestor.Core
+### Ciclo.Core
 - **Responsibility:** Domain entities, value objects, interfaces. Pure C# — no external packages.
-- **Public surface:** All public classes and interfaces in the `EduGestor.Core` namespace.
+- **Public surface:** All public classes and interfaces in the `Ciclo.Core` namespace.
 - **Dependencies:** None (zero package references).
 - **Reasons to change:** New domain entity added, new interface defined, new enum created.
 
-### EduGestor.Infrastructure
+### Ciclo.Infrastructure
 - **Responsibility:** Data access (EF Core), external service integrations, DI registration.
 - **Public surface:** `AddInfrastructure(IConfiguration)` extension method. `AppDbContext` class. Services registered in DI.
-- **Dependencies:** EduGestor.Core, Npgsql.EntityFrameworkCore.PostgreSQL.
+- **Dependencies:** Ciclo.Core, Npgsql.EntityFrameworkCore.PostgreSQL.
 - **Reasons to change:** New DbSet added, new external service integrated, connection string format changed.
 
-### EduGestor.Api.Tests
+### Ciclo.Api.Tests
 - **Responsibility:** Integration tests for API endpoints. Uses `WebApplicationFactory<Program>`.
 - **Public surface:** Test classes and methods (xUnit).
-- **Dependencies:** EduGestor.Api, Microsoft.AspNetCore.Mvc.Testing.
+- **Dependencies:** Ciclo.Api, Microsoft.AspNetCore.Mvc.Testing.
 - **Reasons to change:** New controller needs tests, existing endpoint behavior changes.
 
 ## File / Module Layout
 
 ```
-EduGestor/
-├── EduGestor.sln
+Ciclo/
+├── Ciclo.sln
 ├── docker-compose.yml
 ├── .dockerignore
 ├── .gitignore
@@ -113,8 +113,8 @@ EduGestor/
 │   └── init-db.sql                  # SQL script to create database + user (no Docker required)
 │
 ├── src/
-│   ├── EduGestor.Api/                  # ASP.NET Core Web API
-│   │   ├── EduGestor.Api.csproj
+│   ├── Ciclo.Api/                  # ASP.NET Core Web API
+│   │   ├── Ciclo.Api.csproj
 │   │   ├── Program.cs                  # App entry point + DI + middleware pipeline
 │   │   ├── appsettings.json
 │   │   ├── appsettings.Development.json
@@ -122,28 +122,28 @@ EduGestor/
 │   │   │   └── HealthController.cs     # /health + /health/db endpoints
 │   │   └── Dockerfile
 │   │
-│   ├── EduGestor.Core/                 # Domain layer — zero dependencies
-│   │   ├── EduGestor.Core.csproj
+│   ├── Ciclo.Core/                 # Domain layer — zero dependencies
+│   │   ├── Ciclo.Core.csproj
 │   │   └── (empty — populated by later specs)
 │   │
-│   └── EduGestor.Infrastructure/       # EF Core, external services
-│       ├── EduGestor.Infrastructure.csproj
+│   └── Ciclo.Infrastructure/       # EF Core, external services
+│       ├── Ciclo.Infrastructure.csproj
 │       ├── Data/
 │       │   └── AppDbContext.cs         # EF Core DbContext (empty, no entities yet)
 │       └── DependencyInjection.cs      # Extension method: AddInfrastructure()
 │
 └── tests/
-    └── EduGestor.Api.Tests/
-        ├── EduGestor.Api.Tests.csproj
+    └── Ciclo.Api.Tests/
+        ├── Ciclo.Api.Tests.csproj
         └── HealthControllerTests.cs
 ```
 
 ## Project Dependencies
 
 ```
-EduGestor.Api ──► EduGestor.Infrastructure ──► EduGestor.Core
-EduGestor.Api ──► EduGestor.Core
-EduGestor.Api.Tests ──► EduGestor.Api
+Ciclo.Api ──► Ciclo.Infrastructure ──► Ciclo.Core
+Ciclo.Api ──► Ciclo.Core
+Ciclo.Api.Tests ──► Ciclo.Api
 ```
 
 ## Technology Versions
@@ -159,7 +159,7 @@ EduGestor.Api.Tests ──► EduGestor.Api
 | Swashbuckle | 10.x |
 | Serilog.AspNetCore | 9.x |
 
-## NuGet Packages (EduGestor.Api)
+## NuGet Packages (Ciclo.Api)
 
 ```xml
 <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
@@ -167,28 +167,28 @@ EduGestor.Api.Tests ──► EduGestor.Api
 <PackageReference Include="Serilog.AspNetCore" Version="9.*" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*" />
 <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
-<InternalsVisibleTo Include="EduGestor.Api.Tests" />
+<InternalsVisibleTo Include="Ciclo.Api.Tests" />
 ```
 
-## NuGet Packages (EduGestor.Infrastructure)
+## NuGet Packages (Ciclo.Infrastructure)
 
 ```xml
 <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
 <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.*" />
 ```
 
-## NuGet Packages (EduGestor.Core)
+## NuGet Packages (Ciclo.Core)
 
 ```xml
 <!-- No packages — pure domain layer -->
 ```
 
-## AppDbContext (src/EduGestor.Infrastructure/Data/AppDbContext.cs)
+## AppDbContext (src/Ciclo.Infrastructure/Data/AppDbContext.cs)
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
 
-namespace EduGestor.Infrastructure.Data;
+namespace Ciclo.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
@@ -201,15 +201,15 @@ public class AppDbContext : DbContext
 }
 ```
 
-## DependencyInjection (src/EduGestor.Infrastructure/DependencyInjection.cs)
+## DependencyInjection (src/Ciclo.Infrastructure/DependencyInjection.cs)
 
 ```csharp
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using EduGestor.Infrastructure.Data;
+using Ciclo.Infrastructure.Data;
 
-namespace EduGestor.Infrastructure;
+namespace Ciclo.Infrastructure;
 
 public static class DependencyInjection
 {
@@ -251,7 +251,7 @@ psql -U postgres -f db/init-db.sql
 Then run the API normally:
 
 ```bash
-dotnet run --project src/EduGestor.Api
+dotnet run --project src/Ciclo.Api
 ```
 
 The EF Core auto-migration (in Development mode) creates all tables automatically.
@@ -279,7 +279,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/EduGestor.Api/Dockerfile
+      dockerfile: src/Ciclo.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=postgres;Database=edugestor;Username=edugestor;Password=${DB_PASSWORD:-1234}
@@ -293,30 +293,30 @@ volumes:
   pgdata:
 ```
 
-## Dockerfile (src/EduGestor.Api/Dockerfile)
+## Dockerfile (src/Ciclo.Api/Dockerfile)
 
 ```dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj files and restore dependencies (layer caching)
-COPY src/EduGestor.Core/EduGestor.Core.csproj src/EduGestor.Core/
-COPY src/EduGestor.Infrastructure/EduGestor.Infrastructure.csproj src/EduGestor.Infrastructure/
-COPY src/EduGestor.Api/EduGestor.Api.csproj src/EduGestor.Api/
-RUN dotnet restore src/EduGestor.Api/EduGestor.Api.csproj
+COPY src/Ciclo.Core/Ciclo.Core.csproj src/Ciclo.Core/
+COPY src/Ciclo.Infrastructure/Ciclo.Infrastructure.csproj src/Ciclo.Infrastructure/
+COPY src/Ciclo.Api/Ciclo.Api.csproj src/Ciclo.Api/
+RUN dotnet restore src/Ciclo.Api/Ciclo.Api.csproj
 
 # Copy all source and build
 COPY . .
-RUN dotnet publish src/EduGestor.Api/EduGestor.Api.csproj -c Release -o /app
+RUN dotnet publish src/Ciclo.Api/Ciclo.Api.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app .
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "EduGestor.Api.dll"]
+ENTRYPOINT ["dotnet", "Ciclo.Api.dll"]
 ```
 
-## appsettings.json (src/EduGestor.Api/appsettings.json)
+## appsettings.json (src/Ciclo.Api/appsettings.json)
 
 ```json
 {
@@ -369,14 +369,14 @@ public class HealthController : ControllerBase
 }
 ```
 
-## Program.cs (src/EduGestor.Api/Program.cs)
+## Program.cs (src/Ciclo.Api/Program.cs)
 
 ```csharp
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using EduGestor.Infrastructure;
-using EduGestor.Infrastructure.Data;
+using Ciclo.Infrastructure;
+using Ciclo.Infrastructure.Data;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)

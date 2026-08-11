@@ -100,7 +100,7 @@ api.interceptors.response.use(
 VitePWA({
   registerType: 'autoUpdate',
   manifest: {
-    name: 'EduGestor', short_name: 'EduGestor',
+    name: 'Ciclo', short_name: 'Ciclo',
     theme_color: '#4f46e5', background_color: '#f9fafb',
     display: 'standalone', orientation: 'portrait-primary',
     icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' },

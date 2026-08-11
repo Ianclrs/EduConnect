@@ -34,7 +34,7 @@ const parentItems = [
 
 function AdminLayout() {
   return (
-    <Sidebar items={adminItems} title="EduGestor Admin">
+    <Sidebar items={adminItems} title="Ciclo Admin">
       <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<StudentList />} />
@@ -53,7 +53,7 @@ function AdminLayout() {
 
 function ParentLayout() {
   return (
-    <Sidebar items={parentItems} title="EduGestor">
+    <Sidebar items={parentItems} title="Ciclo">
         <Routes>
           <Route index element={<ParentDashboard />} />
           <Route path="children/:id" element={<ChildDetail />} />

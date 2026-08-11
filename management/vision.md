@@ -1,8 +1,8 @@
-# EduGestor Vision
+# Ciclo Vision
 
 ## Product Vision
 
-EduGestor é um sistema de gestão escolar SaaS multi-tenant que conecta colégios e pais em uma única plataforma. Ele centraliza e automatiza todo o ciclo de vida acadêmico dos alunos: matrículas, rematrículas, documentos obrigatórios, notificações e acompanhamento de desempenho — eliminando papelada, reduzindo erros e acelerando a comunicação entre escola e família.
+Ciclo é um sistema de gestão escolar SaaS multi-tenant que conecta colégios e pais em uma única plataforma. Ele centraliza e automatiza todo o ciclo de vida acadêmico dos alunos: matrículas, rematrículas, documentos obrigatórios, notificações e acompanhamento de desempenho — eliminando papelada, reduzindo erros e acelerando a comunicação entre escola e família.
 
 ## Target Audience
 

@@ -4,22 +4,22 @@
 
 ### T90.1: Create Parent DTOs
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Contracts/ParentDtos.cs` with `ParentDashboardDto`, `ChildSummaryDto`, `ChildDetailDto`, `GradeDto`.
+- **Action:** Create `src/Ciclo.Api/Contracts/ParentDtos.cs` with `ParentDashboardDto`, `ChildSummaryDto`, `ChildDetailDto`, `GradeDto`.
 - **Verify:** `dotnet build` exits 0.
 
 ### T90.2: Create ForbiddenException
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Middleware/ForbiddenException.cs`. Wire in global exception middleware to map to 403.
+- **Action:** Create `src/Ciclo.Api/Middleware/ForbiddenException.cs`. Wire in global exception middleware to map to 403.
 - **Verify:** `dotnet build` exits 0. Exception returns 403.
 
 ### T90.3: Create ParentService
 - [x] done
-- **Action:** Create `src/EduGestor.Infrastructure/Services/ParentService.cs`. All 6 methods with `VerifyParentChildLinkAsync` guard. Dashboard aggregates data from Students, Documents, Enrollments, Notifications.
+- **Action:** Create `src/Ciclo.Infrastructure/Services/ParentService.cs`. All 6 methods with `VerifyParentChildLinkAsync` guard. Dashboard aggregates data from Students, Documents, Enrollments, Notifications.
 - **Verify:** Unit tests: parent sees only linked children, unlinked access throws ForbiddenException.
 
 ### T90.4: Create ParentController
 - [x] done
-- **Action:** Create `src/EduGestor.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]` and all 6 endpoints.
+- **Action:** Create `src/Ciclo.Api/Controllers/ParentController.cs` with `[Authorize(Roles = "Parent")]` and all 6 endpoints.
 - **Verify:** Integration tests via `WebApplicationFactory`.
 
 ### T90.5: Verify

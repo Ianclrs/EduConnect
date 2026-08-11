@@ -101,7 +101,7 @@ Esta spec entrega **V10: Frontend Application** do `management/vision.md`. Espec
 
 ### FR-015: PWA
 - Service worker registrado via `vite-plugin-pwa` (autoUpdate).
-- Manifest.json: nome "EduGestor", tema #4f46e5 (indigo-600), display standalone.
+- Manifest.json: nome "Ciclo", tema #4f46e5 (indigo-600), display standalone.
 - Ícones 192x192 e 512x512.
 - Cache offline: página offline quando sem conexão.
 - Install prompt nativo no mobile.
