@@ -63,8 +63,8 @@ export interface EnrollmentPeriod {
   id: string;
   nome: string;
   anoLetivo: number;
-  inicioMatricula: string;
-  fimMatricula: string;
+  dataInicio: string;
+  dataFim: string;
   isActive: boolean;
 }
 

@@ -20,14 +20,21 @@ const colorMap: Record<string, { active: string; hover: string }> = {
   violet: { active: 'bg-violet-50 text-violet-700', hover: 'hover:bg-violet-50 hover:text-violet-700' },
 };
 
+const roleLabels: Record<'Admin' | 'Staff' | 'Parent', string> = {
+  Admin: 'Administração',
+  Staff: 'Secretaria',
+  Parent: 'Responsável',
+};
+
 interface SidebarProps {
   items: SidebarItem[];
   title: string;
   children: ReactNode;
   notificationCount?: number;
+  showLogo?: boolean;
 }
 
-export function Sidebar({ items, title, children, notificationCount }: SidebarProps) {
+export function Sidebar({ items, title, children, notificationCount, showLogo }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(true);
   const location = useLocation();
@@ -128,7 +135,12 @@ export function Sidebar({ items, title, children, notificationCount }: SidebarPr
         >
           <Menu size={22} />
         </button>
-        <span className="ml-3 font-semibold text-stone-800 truncate text-sm">{title}</span>
+        {showLogo && (
+          <img src="/Ciclo_favicon.png" alt="Ciclo" className="w-12 h-12 ml-0 shrink-0" />
+        )}
+        <span className={`${showLogo ? '' : 'ml-3'} font-semibold text-stone-800 truncate text-sm`}>
+          {user ? `${user.name} · ${roleLabels[user.role]}` : title}
+        </span>
       </div>
 
       {/* ===== BODY: sidebar + content ===== */}

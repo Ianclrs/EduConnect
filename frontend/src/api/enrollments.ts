@@ -17,14 +17,14 @@ export async function getEnrollment(id: string): Promise<Enrollment> {
 }
 
 export async function approveEnrollment(id: string): Promise<void> {
-  await api.put(`/enrollments/${id}/approve`);
+  await api.post(`/enrollments/${id}/approve`);
 }
 
 export async function rejectEnrollment(id: string, motivo: string): Promise<void> {
-  await api.put(`/enrollments/${id}/reject`, { motivoRejeicao: motivo });
+  await api.post(`/enrollments/${id}/reject`, { motivo });
 }
 
 export async function getEnrollmentPeriods(): Promise<EnrollmentPeriod[]> {
   const res = await api.get('/enrollment-periods');
-  return res.data;
+  return res.data.items;
 }

@@ -11,14 +11,12 @@ interface AuthState {
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
   getCurrentUser: () => Promise<User | null>;
-  devLogin: (role: 'Admin' | 'Parent') => void;
 }
 
 export const AuthContext = createContext<AuthState>({
   user: null, isAuthenticated: false, isLoading: true,
   login: async () => {}, logout: async () => {},
   refreshToken: async () => null, getCurrentUser: async () => null,
-  devLogin: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -78,13 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch { return null; }
   };
 
-  const devLogin = (role: 'Admin' | 'Parent') => {
-    setAccessToken('dev-token');
-    setUser({ id: 'dev-1', name: role === 'Admin' ? 'Admin Dev' : 'Pai Dev', email: 'dev@ciclo.com', role, tenantId: 'dev-tenant' });
-  };
-
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, refreshToken, getCurrentUser, devLogin }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, refreshToken, getCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

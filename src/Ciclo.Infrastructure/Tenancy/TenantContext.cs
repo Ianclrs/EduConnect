@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Ciclo.Infrastructure.Tenancy;
 
 public interface ITenantContext
@@ -6,14 +8,28 @@ public interface ITenantContext
     bool IsResolved { get; }
 }
 
-public class TenantContext : ITenantContext
+/// <summary>
+/// Ambient tenant context. Uses <see cref="AsyncLocal{T}"/> so the tenant flows
+/// correctly through async execution contexts per request, and so the EF Core
+/// global query filter (which captures the context instance when the model is
+/// built) always reads the tenant of the current request — never a stale one.
+/// </summary>
+public class TenantContext : ITenantContext, IDisposable
 {
-    private Guid? _tenantId;
+    private static readonly AsyncLocal<Guid?> _tenantId = new();
 
-    public Guid TenantId => _tenantId
+    public Guid TenantId => _tenantId.Value
         ?? throw new TenantNotResolvedException();
 
-    public bool IsResolved => _tenantId.HasValue;
+    public bool IsResolved => _tenantId.Value.HasValue;
 
-    public void SetTenant(Guid tenantId) => _tenantId = tenantId;
+#pragma warning disable CA1822 // SetTenant only mutates the ambient (static) AsyncLocal state
+    public void SetTenant(Guid tenantId) => _tenantId.Value = tenantId;
+#pragma warning restore CA1822
+
+    public void Dispose()
+    {
+        _tenantId.Value = null;
+        GC.SuppressFinalize(this);
+    }
 }

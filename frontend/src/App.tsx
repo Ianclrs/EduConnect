@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
+import DocumentTitle from './components/DocumentTitle';
 import { LayoutDashboard, Users, FileText, Bell, GraduationCap } from 'lucide-react';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -34,7 +35,7 @@ const parentItems = [
 
 function AdminLayout() {
   return (
-    <Sidebar items={adminItems} title="Ciclo Admin">
+    <Sidebar items={adminItems} title="Admin" showLogo>
       <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<StudentList />} />
@@ -67,6 +68,7 @@ function ParentLayout() {
 export default function App() {
   return (
     <BrowserRouter>
+      <DocumentTitle />
       <AuthProvider>
         <Toaster position="top-right" />
         <Routes>

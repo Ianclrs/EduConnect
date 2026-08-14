@@ -7,7 +7,7 @@ public class TenantContextTests
     [Fact]
     public void SetTenant_ValidGuid_SetsTenantId()
     {
-        var context = new TenantContext();
+        using var context = new TenantContext();
         var tenantId = Guid.NewGuid();
 
         context.SetTenant(tenantId);
@@ -19,7 +19,7 @@ public class TenantContextTests
     [Fact]
     public void TenantId_NotSet_ThrowsTenantNotResolvedException()
     {
-        var context = new TenantContext();
+        using var context = new TenantContext();
 
         Assert.False(context.IsResolved);
         Assert.Throws<TenantNotResolvedException>(() => context.TenantId);

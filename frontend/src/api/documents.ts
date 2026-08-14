@@ -13,7 +13,7 @@ export async function getStudentDocuments(studentId: string, params: {
   page?: number;
   pageSize?: number;
 }): Promise<PagedResponse<Document>> {
-  const res = await api.get(`/documents/student/${studentId}`, { params });
+  const res = await api.get(`/students/${studentId}/documents`, { params });
   return res.data;
 }
 
@@ -25,7 +25,7 @@ export async function uploadDocument(formData: FormData): Promise<Document> {
 }
 
 export async function verifyDocument(id: string, approved: boolean, motivoRejeicao?: string): Promise<void> {
-  await api.put(`/documents/${id}/verify`, { approved, motivoRejeicao });
+  await api.post(`/documents/${id}/verify`, { approved, motivoRejeicao });
 }
 
 export async function getDocumentTypes(): Promise<DocumentType[]> {

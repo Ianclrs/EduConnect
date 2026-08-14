@@ -135,20 +135,22 @@ try
 
     app.MapControllers();
 
-    // Auto-migrate database and seed in Development
+    // Create schema (EnsureCreated) and seed in Development
     if (app.Environment.IsDevelopment())
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         try
         {
-            await db.Database.MigrateAsync();
+            await db.Database.EnsureCreatedAsync();
             await TenantSeeder.SeedAsync(db, app.Environment,
+                scope.ServiceProvider.GetRequiredService<ILogger<Program>>());
+            await DemoDataSeeder.SeedAsync(scope.ServiceProvider, db, app.Environment,
                 scope.ServiceProvider.GetRequiredService<ILogger<Program>>());
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Database migration failed — database may not be available");
+            Log.Warning(ex, "Database schema creation failed — database may not be available");
         }
     }
 

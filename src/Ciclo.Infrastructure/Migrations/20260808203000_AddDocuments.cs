@@ -1,4 +1,5 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,6 +8,7 @@ namespace Ciclo.Infrastructure.Migrations;
 
 /// <inheritdoc />
 #pragma warning disable CA1861
+[Migration("20260808203000")]
 public partial class AddDocuments : Migration
 {
     /// <inheritdoc />

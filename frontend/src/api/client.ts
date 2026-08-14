@@ -40,10 +40,6 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch {
-        // Dev token fake: apenas rejeita sem limpar nem redirecionar
-        if (getAccessToken() === 'dev-token') {
-          return Promise.reject(error);
-        }
         setAccessToken(null);
         window.location.href = '/login';
         return Promise.reject(error);

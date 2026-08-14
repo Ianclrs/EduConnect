@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, user, devLogin, getCurrentUser } = useAuth();
+  const { login, isAuthenticated, user, getCurrentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -65,13 +65,14 @@ export default function LoginPage() {
       <div className="absolute top-3/4 right-10 w-40 h-40 bg-violet-300/25 rounded-full blur-2xl animate-blob" style={{ animationDelay: '1s' }} />
       <div className="absolute top-0 left-10 w-36 h-36 bg-amber-300/25 rounded-full blur-2xl animate-blob" style={{ animationDelay: '5s' }} />
       <div className="absolute bottom-10 right-1/2 w-44 h-44 bg-blue-300/25 rounded-full blur-2xl animate-blob" style={{ animationDelay: '7s' }} />
-      <div className="w-full max-w-md bg-stone-200 rounded-2xl shadow-2xl border border-stone-300 overflow-hidden relative z-10">
+      <div className="w-full max-w-sm bg-stone-200 rounded-2xl shadow-2xl border border-stone-300 overflow-hidden relative z-10">
         {/* Top accent bar */}
         <div className="h-1 bg-gradient-to-r from-violet-500 via-blue-500 to-emerald-500 animate-gradient" />
-        <div className="p-8">
-          <div className="text-center mb-8">
+        <div className="p-5 sm:p-8 pt-2 sm:pt-3">
+          <div className="text-center mb-4 sm:mb-6">
+            <img src="/Ciclo_favicon.png" alt="Ciclo" className="w-16 h-16 mx-auto sm:w-20 sm:h-20" />
             <h1 className="text-2xl font-bold text-stone-800 tracking-tight">Ciclo</h1>
-            <p className="text-stone-500 mt-1 text-sm">Sistema de Gestão Escolar</p>
+            <p className="text-stone-500 mt-0.5 text-sm">Seu Sistema de Gestão Escolar</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white !border-stone-400 focus:!ring-stone-500" />
@@ -81,7 +82,7 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <Button type="submit" className="w-full !bg-stone-700 hover:!bg-stone-800" disabled={loading}>
+            <Button type="submit" className="w-full !bg-stone-700 hover:!bg-stone-800 shadow-md" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
@@ -98,13 +99,6 @@ export default function LoginPage() {
             </svg>
             Entrar com Google
           </button>
-          <div className="mt-8 pt-5 border-t border-stone-300">
-            <p className="text-xs text-stone-400 text-center mb-3">Desenvolvimento</p>
-            <div className="flex gap-2">
-              <Button size="sm" className="flex-1 !bg-violet-600 hover:!bg-violet-700" onClick={() => devLogin('Admin')}>Admin</Button>
-              <Button size="sm" className="flex-1 !bg-emerald-600 hover:!bg-emerald-700" onClick={() => devLogin('Parent')}>Pai</Button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

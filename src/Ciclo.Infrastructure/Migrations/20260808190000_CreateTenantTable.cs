@@ -1,4 +1,5 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Ciclo.Infrastructure.Migrations;
 
 /// <inheritdoc />
+[Migration("20260808190000")]
 public partial class CreateTenantTable : Migration
 {
     private static readonly Guid DefaultTenantId = new("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
